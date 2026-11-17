@@ -20,7 +20,7 @@ class RelType:
 ENTITY_TYPES: tuple[NodeType, ...] = (
     NodeType("Lei", "Norma legal (lei, decreto, código), ex.: Lei 13.709/2018 (LGPD)."),
     NodeType("Artigo", "Dispositivo de uma norma, ex.: art. 7º da LGPD."),
-    NodeType("Sumula", "Súmula ou tese de tribunal superior, ex.: Súmula 385 do STJ."),
+    NodeType("Precedente", "Súmula ou tese de repercussão geral de tribunal, ex.: Tema 987 do STF."),
     NodeType("Tribunal", "Órgão do Judiciário, ex.: STJ, STF."),
     NodeType("Orgao", "Órgão ou entidade pública/administrativa, ex.: ANPD, Procon, CGU."),
     NodeType("Conceito", "Termo jurídico definido em norma, ex.: dado pessoal, fornecedor."),
@@ -42,8 +42,8 @@ SEMANTIC_RELATIONS: tuple[RelType, ...] = (
     RelType("PREVE", "Dispositivo prevê uma sanção."),
     RelType("COMPETE_A", "Atribuição ou obrigação compete a um órgão ou sujeito."),
     RelType("APLICA_SE_A", "Direito, obrigação ou sanção se aplica a um sujeito."),
-    RelType("INTERPRETA", "Súmula ou tese interpreta um dispositivo ou lei."),
-    RelType("EDITADA_POR", "Súmula foi editada por um tribunal."),
+    RelType("INTERPRETA", "Precedente interpreta um dispositivo ou lei."),
+    RelType("EDITADA_POR", "Precedente foi firmado por um tribunal."),
 )
 
 # Padrões (origem, relação, destino) aceitos na extração; fora disso é descartado.
@@ -51,8 +51,8 @@ PATTERNS: tuple[tuple[str, str, str], ...] = (
     ("Lei", "CONTEM", "Artigo"),
     ("Artigo", "CITA", "Artigo"),
     ("Artigo", "CITA", "Lei"),
-    ("Sumula", "CITA", "Artigo"),
-    ("Sumula", "CITA", "Lei"),
+    ("Precedente", "CITA", "Artigo"),
+    ("Precedente", "CITA", "Lei"),
     ("Lei", "ALTERA", "Lei"),
     ("Lei", "ALTERA", "Artigo"),
     ("Artigo", "ALTERA", "Artigo"),
@@ -72,9 +72,9 @@ PATTERNS: tuple[tuple[str, str, str], ...] = (
     ("Direito", "APLICA_SE_A", "Sujeito"),
     ("Obrigacao", "APLICA_SE_A", "Sujeito"),
     ("Sancao", "APLICA_SE_A", "Sujeito"),
-    ("Sumula", "INTERPRETA", "Artigo"),
-    ("Sumula", "INTERPRETA", "Lei"),
-    ("Sumula", "EDITADA_POR", "Tribunal"),
+    ("Precedente", "INTERPRETA", "Artigo"),
+    ("Precedente", "INTERPRETA", "Lei"),
+    ("Precedente", "EDITADA_POR", "Tribunal"),
 )
 
 ENTITY_LABELS: frozenset[str] = frozenset(t.label for t in ENTITY_TYPES)

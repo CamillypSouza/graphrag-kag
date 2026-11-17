@@ -1,0 +1,47 @@
+Presidência da República Secretaria-Geral Subchefia para Assuntos Jurídicos
+LEI Nº 12.965, DE 23 DE ABRIL DE 2014
+Regulamento
+Estabelece princípios, garantias, direitos e deveres para o uso da Internet no Brasil.
+A PRESIDENTA DA REPÚBLICA Faço saber que o Congresso Nacional decreta e eu sanciono a seguinte Lei:
+CAPÍTULO I DISPOSIÇÕES PRELIMINARES
+Art. 1º Esta Lei estabelece princípios, garantias, direitos e deveres para o uso da internet no Brasil e determina as diretrizes para atuação da União, dos Estados, do Distrito Federal e dos Municípios em relação à matéria.
+(Rejeitada)
+Art. 2º A disciplina do uso da internet no Brasil tem como fundamento o respeito à liberdade de expressão, bem como:
+I - o reconhecimento da escala mundial da rede;
+II - os direitos humanos, o desenvolvimento da personalidade e o exercício da cidadania em meios digitais;
+III - a pluralidade e a diversidade;
+IV - a abertura e a colaboração;
+V - a livre iniciativa, a livre concorrência e a defesa do consumidor; e
+VI - a finalidade social da rede.
+Art. 3º A disciplina do uso da internet no Brasil tem os seguintes princípios:
+I - garantia da liberdade de expressão, comunicação e manifestação de pensamento, nos termos da Constituição Federal;
+II - proteção da privacidade;
+III - proteção dos dados pessoais, na forma da lei;
+IV - preservação e garantia da neutralidade de rede;
+V - preservação da estabilidade, segurança e funcionalidade da rede, por meio de medidas técnicas compatíveis com os padrões internacionais e pelo estímulo ao uso de boas práticas;
+VI - responsabilização dos agentes de acordo com suas atividades, nos termos da lei;
+VII - preservação da natureza participativa da rede;
+VIII - liberdade dos modelos de negócios promovidos na internet, desde que não conflitem com os demais princípios estabelecidos nesta Lei.
+Parágrafo único. Os princípios expressos nesta Lei não excluem outros previstos no ordenamento jurídico pátrio relacionados à matéria ou nos tratados internacionais em que a República Federativa do Brasil seja parte.
+Art. 4º A disciplina do uso da internet no Brasil tem por objetivo a promoção:
+I - do direito de acesso à internet a todos;
+II - do acesso à informação, ao conhecimento e à participação na vida cultural e na condução dos assuntos públicos;
+III - da inovação e do fomento à ampla difusão de novas tecnologias e modelos de uso e acesso; e
+IV - da adesão a padrões tecnológicos abertos que permitam a comunicação, a acessibilidade e a interoperabilidade entre aplicações e bases de dados.
+Art. 5º Para os efeitos desta Lei, considera-se:
+I - internet: o sistema constituído do conjunto de protocolos lógicos, estruturado em escala mundial para uso público e irrestrito, com a finalidade de possibilitar a comunicação de dados entre terminais por meio de diferentes redes;
+II - terminal: o computador ou qualquer dispositivo que se conecte à internet;
+III - endereço de protocolo de internet (endereço IP): o código atribuído a um terminal de uma rede para permitir sua identificação, definido segundo parâmetros internacionais;
+IV - administrador de sistema autônomo: a pessoa física ou jurídica que administra blocos de endereço IP específicos e o respectivo sistema autônomo de roteamento, devidamente cadastrada no ente nacional responsável pelo registro e distribuição de endereços IP geograficamente referentes ao País;
+V - conexão à internet: a habilitação de um terminal para envio e recebimento de pacotes de dados pela internet, mediante a atribuição ou autenticação de um endereço IP;
+VI - registro de conexão: o conjunto de informações referentes à data e hora de início e término de uma conexão à internet, sua duração e o endereço IP utilizado pelo terminal para o envio e recebimento de pacotes de dados;
+VII - aplicações de internet: o conjunto de funcionalidades que podem ser acessadas por meio de um terminal conectado à internet; e
+(Rejeitada)
+VII - aplicações de internet: o conjunto de funcionalidades que podem ser acessadas por meio de um terminal conectado à internet; e
+VIII - registros de acesso a aplicações de internet: o conjunto de informações referentes à data e hora de uso de uma determinada aplicação de internet a partir de um determinado endereço IP.
+(Rejeitada)
+VIII - registros de acesso a aplicações de internet: o conjunto de informações referentes à data e hora de uso de uma determinada aplicação de internet a partir de um determinado endereço IP.
+(Rejeitada)
+(Rejeitada)
+(Rejeitada)
+Art. 6º Na interpretação desta Lei serão levados em conta, além dos fundamentos, princípios e objetivos previstos, a natureza da internet, seus usos e costumes particulares e sua importância para a promoção do desenvolvimento humano, econômico, social e cultural.

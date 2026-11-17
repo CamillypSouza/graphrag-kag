@@ -28,8 +28,8 @@ graph LR
     Obrigacao -- COMPETE_A --> Orgao
     Direito -- APLICA_SE_A --> Sujeito
     Obrigacao -- APLICA_SE_A --> Sujeito
-    Sumula -- INTERPRETA --> Artigo
-    Sumula -- EDITADA_POR --> Tribunal
+    Precedente -- INTERPRETA --> Artigo
+    Precedente -- EDITADA_POR --> Tribunal
     Orgao -- REGULAMENTA --> Lei
   end
 
@@ -42,16 +42,22 @@ A lista completa de padrões aceitos (origem, relação, destino) está em `src/
 
 | Rótulo | Propriedades | Observação |
 |---|---|---|
-| `Document` | `id`, `titulo`, `tipo` (lei, sumula, tese), `numero`, `ano`, `fonte`, `url`, `hash` | Um arquivo de `data/raw` |
+| `Document` | `id`, `titulo`, `tipo` (lei, decreto, tese), `numero`, `ano`, `fonte`, `url`, `hash` | Um arquivo de `data/raw` |
 | `Chunk` | `id`, `texto`, `ordem`, `rotulo` (ex.: "Art. 7º"), `embedding` | Corte por artigo; `id` é hash estável do documento e da posição |
 | `Entity` + tipo | `key` (chave canônica), `nome`, `descricao`, `aliases`, `embedding`, `pagerank`, `comunidade` | Todo nó de entidade leva `:Entity` e um rótulo do domínio |
 | `Lei` | `numero`, `ano` | `key` = `lei:13709` |
 | `Artigo` | `numero`, `lei` | `key` = `artigo:13709:7` |
-| `Sumula` | `numero`, `tribunal` | `key` = `sumula:stj:385` |
+| `Precedente` | `tipo` (sumula, tese), `numero`, `tribunal` | `key` = `precedente:stf:987` |
 | `Tribunal`, `Orgao`, `Conceito`, `Sujeito`, `Direito`, `Obrigacao`, `Sancao` | herdadas de `Entity` | `key` = `tipo:nome-normalizado` |
 | `Community` | `id`, `nivel`, `resumo`, `tamanho`, `embedding` | Gerada pelo Leiden; o resumo é feito pelo LLM |
 
-Relações semânticas carregam `fonte_chunk` (id do trecho de onde a relação saiu), `confianca` (1.0 para a camada por regras, valor do LLM para a semântica) e `evidencia` (frase curta).
+Relações semânticas carregam:
+
+- `id`: hash estável de origem, tipo e destino, usado nas citações `[r:...]`.
+- `fontes`: lista de ids dos chunks de onde a relação saiu. É o caminho do fato até o texto.
+- `camada`: `estrutural` (regras) ou `semantica` (LLM).
+- `confianca`: 1.0 nas regras e 0.8 no LLM.
+- `evidencia`: trecho literal curto.
 
 ## Restrições e índices
 
@@ -59,7 +65,7 @@ Relações semânticas carregam `fonte_chunk` (id do trecho de onde a relação 
 |---|---|---|---|
 | `document_id`, `chunk_id`, `entity_key`, `community_id` | Unicidade | `id` / `key` | Garantem o `MERGE` idempotente e impedem nós duplicados; a unicidade em `Entity.key` é a base da resolução de entidades |
 | `document_tipo`, `document_ano` | Range | `Document` | Filtros por tipo de norma e por ano |
-| `lei_numero`, `artigo_numero`, `sumula_numero` | Range | Entidades | Buscas exatas que o Text-to-Cypher gera ("art. 7º da Lei 13.709") |
+| `lei_numero`, `artigo_numero`, `precedente_numero` | Range | Entidades | Buscas exatas que o Text-to-Cypher gera ("art. 7º da Lei 13.709") |
 | `entity_nome` | Range | `Entity.nome` | Correspondência exata na resolução de entidades |
 | `entity_pagerank`, `entity_comunidade` | Range | `Entity` | Ordenar o contexto por PageRank e filtrar por comunidade |
 | `menciona_confianca` | Range (relação) | `MENCIONA.confianca` | Filtrar menções fracas |

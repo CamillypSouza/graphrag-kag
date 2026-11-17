@@ -1,0 +1,26 @@
+CAPÍTULO II
+DA NEUTRALIDADE DE REDE
+Art. 3º A exigência de tratamento isonômico de que trata o art. 9º da Lei nº 12.965, de 2014, deve garantir a preservação do caráter público e irrestrito do acesso à internet e os fundamentos, princípios e objetivos do uso da internet no País, conforme previsto na Lei nº 12.965, de 2014.
+Art. 4º A discriminação ou a degradação de tráfego são medidas excepcionais, na medida em que somente poderão decorrer de requisitos técnicos indispensáveis à prestação adequada de serviços e aplicações ou da priorização de serviços de emergência, sendo necessário o cumprimento de todos os requisitos dispostos no art. 9º, § 2º, da Lei nº 12.965, de 2014.
+Art. 5º Os requisitos técnicos indispensáveis à prestação adequada de serviços e aplicações devem ser observados pelo responsável de atividades de transmissão, de comutação ou de roteamento, no âmbito de sua respectiva rede, e têm como objetivo manter sua estabilidade, segurança, integridade e funcionalidade.
+§ 1º Os requisitos técnicos indispensáveis apontados no caput são aqueles decorrentes de:
+I - tratamento de questões de segurança de redes, tais como restrição ao envio de mensagens em massa ( spam) e controle de ataques de negação de serviço; e
+II - tratamento de situações excepcionais de congestionamento de redes, tais como rotas alternativas em casos de interrupções da rota principal e em situações de emergência.
+§ 2º A Agência Nacional de Telecomunicações - Anatel atuará na fiscalização e na apuração de infrações quanto aos requisitos técnicos elencados neste artigo, consideradas as diretrizes estabelecidas pelo Comitê Gestor da Internet - CGIbr.
+Art. 6º Para a adequada prestação de serviços e aplicações na internet, é permitido o gerenciamento de redes com o objetivo de preservar sua estabilidade, segurança e funcionalidade, utilizando-se apenas de medidas técnicas compatíveis com os padrões internacionais, desenvolvidos para o bom funcionamento da internet, e observados os parâmetros regulatórios expedidos pela Anatel e consideradas as diretrizes estabelecidas pelo CGIbr.
+Art. 7º O responsável pela transmissão, pela comutação ou pelo roteamento deverá adotar medidas de transparência para explicitar ao usuário os motivos do gerenciamento que implique a discriminação ou a degradação de que trata o art. 4º, tais como:
+I - a indicação nos contratos de prestação de serviço firmado com usuários finais ou provedores de aplicação; e
+II - a divulgação de informações referentes às práticas de gerenciamento adotadas em seus sítios eletrônicos, por meio de linguagem de fácil compreensão.
+Parágrafo único. As informações de que trata esse artigo deverão conter, no mínimo:
+I - a descrição dessas práticas;
+II - os efeitos de sua adoção para a qualidade de experiência dos usuários; e
+III - os motivos e a necessidade da adoção dessas práticas.
+Art. 8º A degradação ou a discriminação decorrente da priorização de serviços de emergência somente poderá decorrer de:
+I - comunicações destinadas aos prestadores dos serviços de emergência, ou comunicação entre eles, conforme previsto na regulamentação da Agência Nacional de Telecomunicações - Anatel; ou
+II - comunicações necessárias para informar a população em situações de risco de desastre, de emergência ou de estado de calamidade pública.
+Parágrafo único. A transmissão de dados nos casos elencados neste artigo será gratuita.
+Art. 9º Ficam vedadas condutas unilaterais ou acordos entre o responsável pela transmissão, pela comutação ou pelo roteamento e os provedores de aplicação que:
+I - comprometam o caráter público e irrestrito do acesso à internet e os fundamentos, os princípios e os objetivos do uso da internet no País;
+II - priorizem pacotes de dados em razão de arranjos comerciais; ou
+III - privilegiem aplicações ofertadas pelo próprio responsável pela transmissão, pela comutação ou pelo roteamento ou por empresas integrantes de seu grupo econômico.
+Art. 10. As ofertas comerciais e os modelos de cobrança de acesso à internet devem preservar uma internet única, de natureza aberta, plural e diversa, compreendida como um meio para a promoção do desenvolvimento humano, econômico, social e cultural, contribuindo para a construção de uma sociedade inclusiva e não discriminatória.

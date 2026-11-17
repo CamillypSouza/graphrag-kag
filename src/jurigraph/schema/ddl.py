@@ -27,7 +27,7 @@ def range_indexes() -> list[Ddl]:
     """Índices de faixa (B-tree) nas propriedades usadas em filtro e ordenação."""
     nos = [("document_tipo", "Document", "tipo"), ("document_ano", "Document", "ano"),
            ("lei_numero", "Lei", "numero"), ("artigo_numero", "Artigo", "numero"),
-           ("sumula_numero", "Sumula", "numero"), ("entity_pagerank", "Entity", "pagerank"),
+           ("precedente_numero", "Precedente", "numero"), ("entity_pagerank", "Entity", "pagerank"),
            ("entity_comunidade", "Entity", "comunidade"), ("entity_nome", "Entity", "nome")]
     ddls = [Ddl(n, "range", f"CREATE INDEX {n} IF NOT EXISTS FOR (x:{l}) ON (x.{p})")
             for n, l, p in nos]

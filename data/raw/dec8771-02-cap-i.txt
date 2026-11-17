@@ -1,0 +1,16 @@
+CAPÍTULO I
+DISPOSIÇÕES GERAIS
+Art. 1º Este Decreto trata das hipóteses admitidas de discriminação de pacotes de dados na internet e de degradação de tráfego, indica procedimentos para guarda e proteção de dados por provedores de conexão e de aplicações, aponta medidas de transparência na requisição de dados cadastrais pela administração pública e estabelece parâmetros para fiscalização e apuração de infrações contidas na Lei nº 12.965, de 23 de abril de 2014.
+Art. 1º Este Decreto regulamenta a Lei nº 12.965, de 23 de abril de 2014, para dispor sobre os deveres dos provedores de conexão e de aplicações de internet, e abrange os seguintes aspectos: (Redação dada pelo Decreto nº 12.975, de 2026) Vigência
+I - hipóteses admitidas de discriminação de pacotes de dados na internet e de degradação de tráfego; (Incluído pelo Decreto nº 12.975, de 2026) Vigência
+II - deveres e procedimentos de guarda e proteção de dados por provedores de conexão e de aplicações de internet, e outros relativos a conteúdo gerado por terceiros e proteção a direitos dos usuários de internet; (Incluído pelo Decreto nº 12.975, de 2026) Vigência
+III - medidas de transparência: (Incluído pelo Decreto nº 12.975, de 2026) Vigência
+a) na requisição de dados cadastrais pela administração pública; e (Incluído pelo Decreto nº 12.975, de 2026) Vigência
+b) no cumprimento do dever de cuidado dos provedores de aplicações de internet no âmbito de seus serviços; e (Incluído pelo Decreto nº 12.975, de 2026) Vigência
+IV - parâmetros para fiscalização e apuração das infrações previstas na Lei nº 12.965, de 23 de abril de 2014. (Incluído pelo Decreto nº 12.975, de 2026) Vigência
+Art. 2º O disposto neste Decreto se destina aos responsáveis pela transmissão, pela comutação ou pelo roteamento e aos provedores de conexão e de aplicações de internet, definida nos termos do inciso I do caput do art. 5º da Lei nº 12.965, de 2014.
+Parágrafo único. O disposto neste Decreto não se aplica:
+I - aos serviços de telecomunicações que não se destinem ao provimento de conexão de internet; e
+II - aos serviços especializados, entendidos como serviços otimizados por sua qualidade assegurada de serviço, de velocidade ou de segurança, ainda que utilizem protocolos lógicos TCP/IP ou equivalentes, desde que:
+a) não configurem substituto à internet em seu caráter público e irrestrito; e
+b) sejam destinados a grupos específicos de usuários com controle estrito de admissão.

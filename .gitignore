@@ -9,3 +9,5 @@ data/neo4j/
 *.log
 .DS_Store
 *.egg-info/
+data/state/
+logs/
