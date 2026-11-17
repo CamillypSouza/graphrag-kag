@@ -1,0 +1,58 @@
+"""Orquestração: recuperar -> gerar -> verificar, nos três modos comparados na avaliação."""
+
+import time
+from dataclasses import dataclass
+from typing import Literal
+
+from jurigraph.generation.answer import RespostaLLM, gerar
+from jurigraph.generation.verifier import Verificacao, verificar
+from jurigraph.graph_algos.paths import resumos_relevantes
+from jurigraph.llm import USAGE
+from jurigraph.retrieval.context import Contexto
+from jurigraph.retrieval.hybrid import busca_hibrida, busca_vetorial
+from jurigraph.retrieval.kag_planner import resolver_kag
+from jurigraph.retrieval.text2cypher import text2cypher
+
+Modo = Literal["vetorial", "hibrido", "kag"]
+MODOS: dict[str, str] = {
+    "vetorial": "RAG vetorial puro (baseline)",
+    "hibrido": "GraphRAG híbrido (vetor + fulltext + 2 saltos + Text-to-Cypher + comunidades)",
+    "kag": "GraphRAG com planejador estilo KAG",
+}
+
+
+@dataclass
+class Resposta:
+    pergunta: str
+    modo: str
+    contexto: Contexto
+    bruta: RespostaLLM
+    verificacao: Verificacao
+    segundos: float
+    tokens: dict[str, float]
+
+    @property
+    def texto(self) -> str:
+        return self.verificacao.resposta_final
+
+
+def recuperar(pergunta: str, modo: Modo) -> Contexto:
+    if modo == "vetorial":
+        return busca_vetorial(pergunta)
+    if modo == "kag":
+        return resolver_kag(pergunta)
+    ctx = busca_hibrida(pergunta)
+    ctx.merge(text2cypher(pergunta))
+    ctx.merge(resumos_relevantes(pergunta, k=2))
+    return ctx
+
+
+def responder(pergunta: str, modo: Modo = "hibrido") -> Resposta:
+    """Pipeline completo com medição de latência e tokens."""
+    USAGE.reset()
+    t0 = time.perf_counter()
+    ctx = recuperar(pergunta, modo)
+    bruta = gerar(pergunta, ctx)
+    ver = verificar(bruta, ctx)
+    return Resposta(pergunta, modo, ctx, bruta, ver, round(time.perf_counter() - t0, 2),
+                    USAGE.snapshot())
