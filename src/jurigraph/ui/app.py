@@ -14,8 +14,10 @@ from neo4j_viz import Node, Relationship, VisualizationGraph
 from jurigraph import db
 from jurigraph.config import ROOT
 from jurigraph.generation.verifier import PESOS
+from jurigraph.llm import get_embedder
 from jurigraph.rag import MODOS, Resposta, responder
 from jurigraph.retrieval.context import Contexto
+from jurigraph.retrieval.text2cypher import schema_texto
 
 CORES = {
     "Lei": "#1f4e79", "Artigo": "#2e75b6", "Precedente": "#7030a0", "Tribunal": "#4b2a63",
@@ -47,6 +49,14 @@ def estatisticas() -> dict[str, int]:
     rel = db.run("MATCH ()-[r]->() RETURN count(r) AS n")[0]["n"]
     d = db.run("MATCH (d:Document) RETURN count(d) AS n")[0]["n"]
     return {"Documentos": d, "Nós": r, "Entidades": e, "Relações": rel}
+
+
+@st.cache_resource(show_spinner="Carregando o modelo de embeddings e o schema do grafo...")
+def aquecer() -> bool:
+    """Carrega uma vez por processo o que a primeira pergunta pagaria (~15 s)."""
+    get_embedder().embed_query("aquecimento")
+    schema_texto()
+    return True
 
 
 @st.cache_data
@@ -208,6 +218,7 @@ def main() -> None:
             st.error(f"Neo4j indisponível: {exc}")
         st.caption("Corpus: LGPD, Marco Civil, CDC, LAI, Lei 14.181, Decretos 8.771 e 7.962, temas do STF. "
                    "Pesquisa, não aconselhamento jurídico.")
+    aquecer()
     st.subheader("Pergunte sobre a legislação do corpus")
     exemplo = st.selectbox("Exemplos", [""] + exemplos(), index=0)
     pergunta = st.text_area("Pergunta", value=exemplo, height=80)
