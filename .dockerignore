@@ -1,0 +1,8 @@
+.env
+.env.*
+.venv
+data/neo4j
+data/state
+logs
+docs
+**/__pycache__

@@ -16,7 +16,6 @@ import math
 import statistics
 import time
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import Literal
 
 from neo4j_graphrag.types import LLMMessage
@@ -170,14 +169,58 @@ entrada/saída) e não inclui o juiz da avaliação.
 - **Fidelidade das citações:** afirmações cujas citações apontam para ids presentes no subgrafo recuperado.
 - **Limitações:** o juiz é o mesmo modelo que gera as respostas, e o conjunto de perguntas é pequeno e foi
   escrito pela equipe a partir do próprio corpus.
+- **Análise dos resultados:** `docs/artigo/discussao.tex`.
 """
+
+
+LATEX_LINHAS = ["Acerto (respondíveis)", "Acerto (impossíveis = recusa)", "Alucinação bruta (afirmações não sustentadas)",
+                "Impossíveis respondidas", "Fidelidade das citações", "Latência média (s)",
+                "Custo médio por pergunta (US$)"]
+LATEX_MODOS = {"vetorial": "Vetorial", "hibrido": "Híbrido", "kag": "KAG"}
+
+
+def _esc(t: str) -> str:
+    return t.replace("%", "\\%").replace("$", "\\$")
+
+
+def tabela_latex(rs: list[Resultado]) -> str:
+    """Tabelas do artigo geradas dos resultados (sem número digitado à mão)."""
+    modos = [m for m in MODOS if any(r.modo == m for r in rs)]
+    met = {m: _metricas([r for r in rs if r.modo == m]) for m in modos}
+    cab = " & ".join(["Métrica"] + [LATEX_MODOS[m] for m in modos])
+    linhas = [" & ".join([_esc(n)] + [_esc(met[m][n]) for m in modos]) + " \\\\" for n in LATEX_LINHAS]
+    tipos = [" & ".join([TIPOS[t]] + [_esc(_pct(statistics.mean(r.acerto for r in rs if r.modo == m and r.tipo == t)))
+                                      for m in modos]) + " \\\\" for t in TIPOS if any(r.tipo == t for r in rs)]
+    cols = "l" + "r" * len(modos)
+    return "\n".join([
+        "% Gerado por python -m jurigraph.eval.avaliar; não editar à mão.",
+        "\\begin{table}[ht]\\centering\\small",
+        f"\\caption{{Resultados gerais ({len({r.id for r in rs})} perguntas por modo).}}\\label{{tab:geral}}",
+        f"\\begin{{tabular}}{{{cols}}}\\hline", cab + " \\\\ \\hline", *linhas, "\\hline\\end{tabular}\\end{table}",
+        "\\begin{table}[ht]\\centering\\small",
+        "\\caption{Acerto por tipo de pergunta.}\\label{tab:tipos}",
+        f"\\begin{{tabular}}{{{cols}}}\\hline", cab.replace("Métrica", "Tipo") + " \\\\ \\hline", *tipos,
+        "\\hline\\end{tabular}\\end{table}", ""])
+
+
+def gravar_saidas(resultados: list[Resultado], n_perguntas: int) -> str:
+    texto = relatorio(resultados, n_perguntas)
+    (ROOT / "docs" / "avaliacao.md").write_text(texto, encoding="utf-8")
+    (ROOT / "docs" / "artigo" / "resultados.tex").write_text(tabela_latex(resultados), encoding="utf-8")
+    return texto
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Avaliação dos três modos")
     ap.add_argument("--modos", default="vetorial,hibrido,kag")
     ap.add_argument("--limite", type=int, help="só as N primeiras perguntas")
+    ap.add_argument("--so-relatorio", action="store_true", help="regera os relatórios de resultados.jsonl")
     a = ap.parse_args()
+    saida = ROOT / "data" / "eval" / "resultados.jsonl"
+    if a.so_relatorio:
+        rs = [Resultado(**json.loads(l)) for l in saida.read_text(encoding="utf-8").splitlines() if l.strip()]
+        print(gravar_saidas(rs, len({r.id for r in rs})))
+        return
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     for ruidoso in ("neo4j", "httpx", "httpx2", "sentence_transformers", "neo4j_graphrag"):
         logging.getLogger(ruidoso).setLevel(logging.WARNING)
@@ -196,11 +239,9 @@ def main() -> None:
             resultados.append(r)
             log.info("%-8s %s %-9s acerto=%.1f conf=%.2f %.1fs", modo, p["id"], r.veredito, r.acerto,
                      r.confianca, r.segundos)
-    saida = ROOT / "data" / "eval" / "resultados.jsonl"
     saida.write_text("\n".join(json.dumps(asdict(r), ensure_ascii=False) for r in resultados) + "\n",
                      encoding="utf-8")
-    (ROOT / "docs" / "avaliacao.md").write_text(relatorio(resultados, len(perguntas)), encoding="utf-8")
-    print(relatorio(resultados, len(perguntas)))
+    print(gravar_saidas(resultados, len(perguntas)))
     db.close_driver()
 
 

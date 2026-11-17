@@ -1,0 +1,34 @@
+% Análise da execução de 17/11/2026 (data/eval/resultados.jsonl). Se a avaliação for refeita,
+% revise os números citados aqui com base em resultados.tex.
+\subsection{Discussão}
+
+O resultado não confirma a hipótese inicial de que a recuperação por grafo superaria o baseline vetorial.
+Nas 27 perguntas respondíveis, o RAG vetorial e o GraphRAG híbrido ficaram praticamente empatados
+(74,1\% e 72,2\% de acerto), e o modo KAG ficou atrás (53,7\%). Nas perguntas multi-hop, vetorial e híbrido
+empataram em 83,3\%.
+
+Três fatores explicam o resultado. Primeiro, o corpus foi dividido em um trecho por artigo, e muitas perguntas
+multi-hop do nosso conjunto podem ser respondidas por um único artigo que já cita o outro dispositivo. O texto
+do Tema 987, por exemplo, transcreve o art.~19 do Marco Civil. Nesse cenário, a busca vetorial encontra o trecho
+certo sem precisar atravessar o grafo. Segundo, a expansão de dois saltos acrescenta cerca de cem fatos ao
+contexto, o que eleva o ruído. A alucinação bruta, isto é, as afirmações geradas que o verificador rejeitou,
+subiu de 17,7\% (vetorial) para 27,8\% (híbrido) e 34,4\% (KAG). Terceiro, o planejador KAG troca a busca ampla por
+passos estreitos. Quando um passo de Cypher ou de busca volta pouco, o contexto não basta, e o sistema recusa:
+22,2\% das perguntas respondíveis foram recusadas no KAG, contra 14,8\% no vetorial.
+
+O mecanismo de anti-alucinação funcionou nos três modos. Todas as perguntas impossíveis foram recusadas, e
+nenhuma afirmação sem sustentação chegou à resposta final, porque o verificador as remove. O custo é a
+recusa de parte das perguntas respondíveis. O grafo trouxe ganhos que a tabela não mostra: a rastreabilidade
+(cada afirmação aponta para um trecho, uma relação ou um caminho), as consultas estruturais que o vetor não
+responde (por exemplo, contar quais normas alteraram artigos da LGPD) e os resumos de comunidade para perguntas
+globais. Ainda assim, o acerto nas globais ficou entre 40\% e 50\%, porque o juiz exige uma cobertura que poucos
+resumos não alcançam.
+
+O modo híbrido custou cerca de 3,4 vezes mais por pergunta que o vetorial (US\$ 0,0116 contra US\$ 0,0034),
+sobretudo pelo contexto maior. A latência média ficou entre 5 e 8 segundos. A maior parte dela vem das três
+chamadas ao LLM (Cypher, geração e verificação).
+
+\textbf{Limitações.} O conjunto tem 32 perguntas, escritas pela própria equipe a partir do corpus. O juiz é o
+mesmo modelo que gera as respostas. E cada configuração rodou uma única vez, sem medir a variância entre
+execuções. As diferenças de poucos pontos percentuais entre o vetorial e o híbrido não devem ser lidas como
+significativas.

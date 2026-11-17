@@ -1,0 +1,163 @@
+% Artigo no modelo SBC. Compilar com o template oficial (sbc-template.sty e sbc.bst),
+% disponível no site da SBC e como modelo "SBC Conferences Template" no Overleaf.
+\documentclass[12pt]{article}
+\usepackage{sbc-template}
+\usepackage{graphicx,url}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+
+\sloppy
+
+\title{JuriGraph: GraphRAG e KAG sobre Neo4j\\para pesquisa em legislação brasileira}
+
+\author{Nome Integrante 1\inst{1}, Nome Integrante 2\inst{1}}
+
+\address{Curso de Ciência da Computação -- Instituição\\
+  Cidade -- UF -- Brasil
+  \email{\{integrante1,integrante2\}@instituicao.edu.br}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present JuriGraph, a legal research assistant over Brazilian legislation that combines lexical, vector and
+graph retrieval on a labeled property graph in Neo4j. Documents are converted into a knowledge graph by a
+deterministic structural layer and an LLM-based semantic layer, followed by entity resolution. Answers are
+produced by three retrieval strategies (vector RAG, hybrid GraphRAG with two-hop expansion and Text-to-Cypher,
+and a KAG-style planner), share a citation-aware generator and a verifier, and expose an explainable confidence
+score. On 32 questions written from the corpus, all strategies refused every unanswerable question, while graph
+retrieval did not outperform the vector baseline in accuracy.
+\end{abstract}
+
+\begin{resumo}
+Apresentamos o JuriGraph, um assistente de pesquisa sobre legislação brasileira que combina recuperação
+lexical, vetorial e por travessia de grafo sobre um grafo de propriedades rotulado no Neo4j. Os documentos
+viram um grafo de conhecimento por uma camada estrutural determinística e uma camada semântica com LLM,
+seguidas de resolução de entidades. Três estratégias de recuperação (RAG vetorial, GraphRAG híbrido com
+expansão de dois saltos e Text-to-Cypher, e um planejador no estilo KAG) compartilham um gerador com
+citações e um verificador, e expõem um escore de confiança explicável. Em 32 perguntas escritas a partir do corpus,
+todas as estratégias recusaram as perguntas sem resposta, mas a recuperação por grafo não superou o
+baseline vetorial em acerto.
+\end{resumo}
+
+\section{Introdução}
+
+A pesquisa jurídica depende de relações explícitas entre normas: um decreto regulamenta uma lei, uma lei altera
+artigos de outra, um tema de repercussão geral interpreta um dispositivo. O RAG tradicional
+\cite{lewis2020rag} recupera trechos por similaridade e perde essas relações quando a resposta exige combinar
+mais de um documento. O GraphRAG \cite{edge2024graphrag} e o KAG \cite{liang2024kag} propõem representar o
+corpus como grafo e raciocinar sobre ele.
+
+Este trabalho constrói e avalia um sistema completo com quatro pilares: (i) conversão de texto em grafo;
+(ii) modelagem LPG no Neo4j com restrições e índices; (iii) recuperação híbrida com multi-hop e algoritmos de
+grafo; (iv) interface que mostra o subgrafo usado e a origem de cada afirmação.
+
+\section{Trabalhos relacionados}
+
+O GraphRAG da Microsoft \cite{edge2024graphrag} detecta comunidades com Leiden \cite{traag2019leiden} e gera
+resumos que respondem perguntas globais sobre o corpus. O KAG \cite{liang2024kag} decompõe a pergunta em um
+plano lógico executado sobre o grafo e mistura passos de recuperação e de raciocínio. O HybridRAG
+\cite{sarmah2024hybridrag} combina recuperação vetorial e por grafo e mostra ganhos sobre cada uma isolada.
+Bancos de grafo de propriedades \cite{robinson2015graphdb} permitem guardar a evidência de cada relação, o que
+usamos para rastreabilidade e para mitigar alucinação \cite{ji2023hallucination}.
+
+\section{Arquitetura}
+
+\subsection{Corpus e modelo de grafo}
+
+O corpus tem 50 documentos públicos: a LGPD, o Marco Civil da Internet, o CDC, a LAI, a Lei 14.181/2021,
+os Decretos 8.771/2016 e 7.962/2013 (divididos por capítulo) e cinco temas de repercussão geral do STF. O
+modelo LPG tem nós \texttt{Document} e \texttt{Chunk} (camada lexical) e dez tipos de entidade, todos com o
+rótulo adicional \texttt{Entity} e uma chave canônica: \texttt{Lei}, \texttt{Artigo}, \texttt{Precedente},
+\texttt{Tribunal}, \texttt{Orgao}, \texttt{Conceito}, \texttt{Sujeito}, \texttt{Direito}, \texttt{Obrigacao} e
+\texttt{Sancao}. Há treze tipos de relação semântica (por exemplo \texttt{REGULAMENTA}, \texttt{ALTERA},
+\texttt{INTERPRETA}, \texttt{IMPOE}), cada uma com identificador, trechos de origem, camada, confiança e
+evidência textual. O esquema tem restrições de unicidade, índices \emph{range}, dois índices \emph{fulltext} com
+analisador para português e três índices vetoriais (trechos, entidades e comunidades).
+
+Após a ingestão, o grafo tem 451 trechos, 2.056 entidades (732 conceitos, 427 artigos, 298 obrigações) e 8.342
+relações, contando as lexicais e as de pertença a comunidade. Delas, 1.492 são semânticas, extraídas pelo LLM, e 828 são estruturais, obtidas por regras.
+
+\subsection{Text-to-Graph}
+
+A ingestão tem três etapas. A camada estrutural usa expressões regulares para identificar normas, artigos,
+remissões (\texttt{CITA}), alterações (\texttt{ALTERA}, \texttt{REVOGA}) e regulamentações com confiança 1,0.
+Ela ignora as notas de redação, que de outro modo gerariam citações falsas. A camada semântica usa o
+\texttt{LLMEntityRelationExtractor} do \texttt{neo4j-graphrag} com um esquema restrito a padrões
+(origem, relação, destino) permitidos. Triplas fora do esquema são descartadas. A resolução de entidades
+combina chave exata, similaridade \emph{fuzzy} e similaridade de \emph{embeddings} \cite{reimers2019sbert}. Ela
+tem travas contra fusões erradas (especialização, troca de termo, números diferentes e exigência de apoio
+léxico) e registra cada fusão em log; na rodada final foram 52 fusões. A ingestão é idempotente, porque um
+\emph{hash} por documento permite pular o que não mudou.
+
+\subsection{Recuperação}
+
+O modo \textbf{vetorial} é o baseline: os $k$ trechos mais próximos no índice vetorial. O modo \textbf{híbrido}
+usa o \texttt{HybridCypherRetriever}, que soma vetor e BM25 com um ranqueador linear ($\alpha = 0{,}6$). A partir de
+cada trecho, uma consulta Cypher expande dois saltos: das entidades mencionadas (ordenadas por PageRank
+\cite{page1999pagerank}) aos vizinhos e aos vizinhos destes. Esse modo também roda um passo de Text-to-Cypher e
+consulta os resumos de comunidade. O modo \textbf{KAG} pede ao LLM um plano de passos tipados (busca, Cypher,
+caminho mínimo, comunidades) com dependências, e os executa em ordem topológica. O resultado de um passo pode
+ser usado no seguinte.
+
+O Text-to-Cypher recebe o esquema lido do banco e oito exemplos do domínio. Antes de executar, a consulta passa
+por um validador: palavras de escrita bloqueadas fora de literais e comentários, procedimentos só de uma
+lista permitida e \texttt{LIMIT} obrigatório. Depois vêm um \texttt{EXPLAIN}, a execução em sessão de leitura com
+tempo-limite e uma nova tentativa com a mensagem de erro, ou quando o resultado volta vazio.
+
+Os algoritmos de grafo rodam no GDS: PageRank e Leiden. O Leiden encontrou 532 comunidades, com modularidade
+0,785, e as 27 maiores foram resumidas pelo LLM. O caminho mínimo usa \texttt{shortestPath} em Cypher.
+
+\subsection{Geração e anti-alucinação}
+
+O gerador recebe o contexto numerado e precisa citar, em cada afirmação, o identificador de um trecho, entidade
+ou relação. O verificador descarta citações a identificadores ausentes do subgrafo e pede a um juiz LLM que diga
+se cada afirmação é sustentada pelos textos citados. Só as afirmações sustentadas chegam à resposta. A
+confiança é $0{,}4\,s + 0{,}3\,c + 0{,}3\,v$, em que $s$ é a similaridade média dos melhores trechos, $c$ é a
+fração de citações válidas e $v$ é a fração de afirmações sustentadas. Abaixo de 0,35, ou sem nenhuma afirmação
+sustentada, o sistema responde que não há evidência no grafo.
+
+\subsection{Interface}
+
+A interface, feita em Streamlit, mostra a resposta com notas numeradas que levam a cada fonte e a confiança
+decomposta. Também mostra o subgrafo interativo (\texttt{neo4j-viz}), com o tamanho dos nós dado pelo PageRank e
+os elementos citados em destaque, e abas com os trechos de origem, o Cypher executado, os passos do plano, a
+verificação de cada afirmação e os nós consultados.
+
+\section{Metodologia de avaliação}
+
+Escrevemos 32 perguntas a partir do corpus: 10 de um salto, 12 multi-hop, 5 globais e 5 impossíveis (sem
+resposta no corpus). Cada pergunta tem uma resposta esperada conferida no texto. Os três modos usam o mesmo
+modelo (\texttt{gpt-5.4-mini}), o mesmo gerador e o mesmo verificador, e só a recuperação muda. Um juiz LLM
+classifica cada resposta como correta (1), parcial (0,5) ou incorreta (0). Nas impossíveis, o acerto é recusar.
+Também medimos:
+\begin{itemize}
+  \item a alucinação bruta: afirmações geradas que o verificador rejeitou;
+  \item a fração de perguntas impossíveis respondidas;
+  \item a fidelidade das citações;
+  \item a latência;
+  \item o custo estimado pelos tokens consumidos.
+\end{itemize}
+
+\section{Resultados}
+
+\input{resultados}
+
+\input{discussao}
+
+\section{Conclusão}
+
+O JuriGraph mostra que um grafo de conhecimento jurídico, construído por regras e LLM e consultado por busca
+híbrida, travessia e Text-to-Cypher validado, dá respostas com citações verificáveis e um caminho auditável da
+pergunta à fonte. Na avaliação, porém, a recuperação por grafo não superou o baseline vetorial em acerto,
+e o planejador KAG recusou mais perguntas, o que indica que o ganho do grafo depende de perguntas cuja
+resposta esteja de fato espalhada por vários documentos. Como trabalhos futuros, ficam: ampliar o corpus (jurisprudência do STJ, cuja coleta automática
+foi bloqueada pelo portal), avaliar com especialistas em vez de um juiz LLM e reduzir a latência do verificador.
+
+\bibliographystyle{sbc}
+\bibliography{referencias}
+
+\end{document}
