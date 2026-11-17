@@ -10,6 +10,8 @@ import neo4j
 from jurigraph.config import get_settings
 
 log = logging.getLogger(__name__)
+# O neo4j-graphrag ainda usa db.index.fulltext.queryNodes (depreciado no Cypher 25).
+logging.getLogger("neo4j.notifications").setLevel(logging.ERROR)
 _driver: neo4j.Driver | None = None
 
 
