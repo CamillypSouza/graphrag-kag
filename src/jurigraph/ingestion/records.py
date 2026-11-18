@@ -24,7 +24,7 @@ class Documento:
 
 @dataclass
 class Trecho:
-    """Chunk: um artigo (ou parte dele) ou uma janela de texto."""
+    """Um artigo, parte de um artigo ou uma janela de texto."""
 
     id: str
     doc_id: str
@@ -49,7 +49,7 @@ class Relacao:
     tipo: str
     destino: str
     fonte: str  # id do chunk
-    camada: str  # estrutural | semantica
+    camada: str  # estrutural ou semantica
     confianca: float = 1.0
     evidencia: str = ""
 

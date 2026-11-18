@@ -1,8 +1,8 @@
-"""Camada semântica: LLMEntityRelationExtractor (neo4j-graphrag) guiado pelo schema jurídico.
+"""Camada semântica com o LLMEntityRelationExtractor do neo4j-graphrag e o schema jurídico.
 
-O dispositivo do trecho já existe (camada estrutural) e entra no prompt com id 'art'.
-O LLM só cria nós dos tipos abertos (Conceito, Sujeito, Direito...); qualquer tripla
-fora de PATTERNS é descartada. Respostas ficam em cache por trecho, modelo e versão do prompt.
+O dispositivo do trecho já vem da camada estrutural e entra no prompt com o id 'art'.
+O LLM só cria nós dos tipos abertos (Conceito, Sujeito, Direito etc.) e qualquer tripla
+fora de PATTERNS é descartada. As respostas ficam em cache por trecho, modelo e versão do prompt.
 """
 
 import asyncio
@@ -78,7 +78,7 @@ EXEMPLO = json.dumps({
 
 
 def graph_schema() -> GraphSchema:
-    """Schema permitido ao LLM: tipos abertos + o dispositivo de origem."""
+    """Schema passado ao LLM com os tipos abertos e o dispositivo de origem."""
     props = [PropertyType(name="nome", type="STRING"), PropertyType(name="descricao", type="STRING")]
     nos = [NodeType(label=t.label, description=t.descricao, properties=props)
            for t in ENTITY_TYPES if t.label in ABERTOS or t.label in ("Artigo", "Precedente")]
@@ -92,7 +92,7 @@ def graph_schema() -> GraphSchema:
 
 
 class Cache:
-    """Respostas do LLM por trecho em JSONL; permite retomar sem pagar de novo."""
+    """Cache das respostas do LLM em JSONL para não pagar de novo ao reprocessar."""
 
     def __init__(self, arquivo: Path) -> None:
         self.arquivo = arquivo
@@ -161,12 +161,12 @@ class ExtratorSemantico:
             async with self.sem:
                 g = await self.extrator.extract_for_chunk(
                     self.schema, EXEMPLO, TextChunk(text=texto, index=t.ordem))
-            if g.nodes:  # resposta vazia pode ser falha transitória: não guarda no cache
+            if g.nodes:  # resposta vazia pode ser falha temporária, então não vai para o cache
                 self.cache.put(t, g)
         return converter(g, t, origem)
 
     async def extrair(self, itens: list[tuple[Trecho, Entidade]]) -> Extracao:
-        """Extrai em paralelo (limitado) todos os trechos."""
+        """Extrai todos os trechos em paralelo, com limite de chamadas simultâneas."""
         total = Extracao()
         for parcial in await asyncio.gather(*(self._um(t, o) for t, o in itens)):
             total.merge(parcial)

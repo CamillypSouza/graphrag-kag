@@ -1,4 +1,4 @@
-"""Geração ancorada: o LLM responde só com o contexto e cita ids em cada afirmação."""
+"""Geração da resposta usando só o contexto, com ids citados em cada afirmação."""
 
 from neo4j_graphrag.types import LLMMessage
 from pydantic import Field
@@ -28,7 +28,7 @@ class RespostaLLM(Estrito):
 
 
 def gerar(pergunta: str, ctx: Contexto) -> RespostaLLM:
-    """Resposta estruturada (afirmações + citações)."""
+    """Resposta estruturada com afirmações e citações."""
     if not ctx.ids_validos():
         return RespostaLLM(suficiente=False, afirmacoes=[])
     msgs = [LLMMessage(role="system", content=SISTEMA),
@@ -38,6 +38,6 @@ def gerar(pergunta: str, ctx: Contexto) -> RespostaLLM:
 
 
 def normalizar_id(cit: str) -> str:
-    """'[n:abc]' / 'n:abc' / 'abc' -> 'abc'."""
+    """Tira o prefixo da citação, por exemplo '[n:abc]' vira 'abc'."""
     c = cit.strip().strip("[]").strip()
     return c[2:] if c[:2] in ("n:", "r:") else c

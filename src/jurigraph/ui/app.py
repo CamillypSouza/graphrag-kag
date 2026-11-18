@@ -1,6 +1,6 @@
-"""Interface Streamlit: pergunta, resposta citada, subgrafo e rastreabilidade.
+"""Interface em Streamlit com a pergunta, a resposta citada, o subgrafo e a rastreabilidade.
 
-Rodar: streamlit run src/jurigraph/ui/app.py
+Para rodar use streamlit run src/jurigraph/ui/app.py
 """
 
 import json
@@ -73,7 +73,7 @@ def citados(texto: str) -> list[str]:
 def descrever(i: str, ctx: Contexto) -> str:
     if i in ctx.trechos:
         t = ctx.trechos[i]
-        link = f' — <a href="{escape(t.url)}" target="_blank">fonte</a>' if t.url else ""
+        link = f' · <a href="{escape(t.url)}" target="_blank">fonte</a>' if t.url else ""
         return f"<b>{escape(t.titulo)}</b>, {escape(t.rotulo)}{link}"
     if i in ctx.fatos:
         f = ctx.fatos[i]
@@ -96,7 +96,7 @@ def resposta_html(r: Resposta) -> tuple[str, list[str]]:
 
 
 def _subgrafo(ctx: Contexto, destaque: set[str]) -> tuple[list[str], list[str]]:
-    """Fatos e nós a desenhar: citados, caminho e vizinhança mais central, até MAX_NOS."""
+    """Escolhe os fatos e nós a desenhar, primeiro os citados e depois os mais centrais."""
     fatos = sorted(ctx.fatos.values(), key=lambda f: (
         not ({f.id, f.origem, f.destino} & destaque), f.salto,
         -(ctx.entidades.get(f.destino).pagerank if f.destino in ctx.entidades else 0)))
@@ -173,7 +173,7 @@ def abas(r: Resposta, ids: list[str]) -> None:
         ordem = sorted(ctx.trechos.values(), key=lambda t: (t.id not in ids, -t.score))
         for t in ordem:
             marca = "citado · " if t.id in ids else ""
-            with st.expander(f"{marca}{t.titulo} — {t.rotulo}  (cos {t.score:.2f})", expanded=t.id in ids[:2]):
+            with st.expander(f"{marca}{t.titulo}, {t.rotulo}  (cos {t.score:.2f})", expanded=t.id in ids[:2]):
                 st.write(t.texto)
                 st.caption(f"id `{t.id}` · {t.url}")
     with t_cypher:
@@ -214,7 +214,7 @@ def main() -> None:
         st.divider()
         try:
             st.dataframe(pd.DataFrame(estatisticas().items(), columns=["", "total"]), hide_index=True)
-        except Exception as exc:  # banco fora do ar: a UI avisa em vez de quebrar
+        except Exception as exc:  # se o banco estiver fora do ar a tela avisa em vez de quebrar
             st.error(f"Neo4j indisponível: {exc}")
         st.caption("Corpus: LGPD, Marco Civil, CDC, LAI, Lei 14.181, Decretos 8.771 e 7.962, temas do STF. "
                    "Pesquisa, não aconselhamento jurídico.")

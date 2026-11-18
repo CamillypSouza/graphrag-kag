@@ -1,8 +1,8 @@
-"""Resolução de entidades: exata (chave), fuzzy (rapidfuzz) e por embedding.
+"""Resolução de entidades por chave, por fuzzy (rapidfuzz) e por embedding.
 
-A chave canônica já resolve os casos exatos no MERGE. Aqui juntamos variações
-("titular dos dados" x "titular de dados") dentro do mesmo rótulo, com travas
-contra especializações ("dado pessoal" x "dado pessoal sensível").
+A chave canônica já resolve os casos exatos no MERGE. Aqui juntamos variações como
+"titular dos dados" e "titular de dados" dentro do mesmo rótulo, sem juntar
+especializações como "dado pessoal" e "dado pessoal sensível".
 """
 
 import json
@@ -19,7 +19,7 @@ from jurigraph.config import get_settings
 from jurigraph.ingestion.keys import normalizar_nome
 
 log = logging.getLogger(__name__)
-# Embedding sozinho junta "segurança pública" e "segurança do Estado": exige apoio léxico.
+# só o embedding juntaria "segurança pública" e "segurança do Estado", por isso exige apoio léxico
 APOIO_LEXICO = 70
 ROTULOS_ABERTOS = ("Conceito", "Sujeito", "Direito", "Obrigacao", "Sancao", "Orgao", "Tribunal")
 STOP = {"de", "da", "do", "das", "dos", "a", "o", "as", "os", "e", "em", "ao", "aos", "à", "às",
@@ -72,7 +72,7 @@ def especializacao(a: str, b: str) -> bool:
 
 
 def substituicao(a: str, b: str) -> bool:
-    """Cada nome tem termos que o outro não tem: 'produto' x 'produtor', 'MP da União' x 'MP dos Estados'."""
+    """Cada nome tem termos que o outro não tem, como 'produto' e 'produtor'."""
     ta, tb = _conjunto(a), _conjunto(b)
     return bool(ta - tb) and bool(tb - ta)
 
@@ -96,13 +96,13 @@ class _UniaoBusca:
 
 
 def _pode_fundir(a: Candidata, b: Candidata) -> bool:
-    """Funde só variações de forma (plural, acento, preposição) ou termo genérico a mais."""
+    """Só funde variações de plural, acento, preposição ou um termo genérico a mais."""
     return not (especializacao(a.nome, b.nome) or substituicao(a.nome, b.nome)
                 or numeros_diferentes(a.nome, b.nome))
 
 
 def agrupar(cands: list[Candidata], limiar_fuzzy: float, limiar_emb: float) -> list[Grupo]:
-    """Grupos a fundir dentro de um mesmo rótulo; o de maior grau é mantido."""
+    """Grupos a fundir dentro do mesmo rótulo, o nó com mais relações é mantido."""
     if len(cands) < 2:
         return []
     uf, por_fuzzy = _UniaoBusca(len(cands)), set()

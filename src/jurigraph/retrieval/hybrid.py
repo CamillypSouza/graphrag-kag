@@ -1,4 +1,4 @@
-"""Recuperação: vetorial pura (baseline) e híbrida (vetor + fulltext + expansão multi-hop)."""
+"""Busca vetorial pura (baseline) e busca híbrida com vetor, fulltext e expansão multi-hop."""
 
 import re
 from typing import Any
@@ -10,10 +10,10 @@ from jurigraph.config import get_settings
 from jurigraph.llm import get_embedder
 from jurigraph.retrieval.context import Contexto, EntidadeCtx, Fato, Passo, TrechoCtx
 
-# Expansão a partir de cada chunk encontrado:
-#   salto 1: Chunk -MENCIONA-> entidade semente -r1- vizinho
-#   salto 2: vizinho -r2- segundo vizinho
-# Leis são hubs (CONTEM centenas de artigos): não servem de semente nem de ponte.
+# expansão a partir de cada chunk encontrado
+#   salto 1, do chunk para a entidade mencionada e dela para um vizinho
+#   salto 2, do vizinho para um segundo vizinho
+# leis contêm centenas de artigos, por isso não servem de semente nem de ponte
 ENT = "{.key, .nome, .descricao, .pagerank, label: [l IN labels(%s) WHERE l <> 'Entity'][0]}"
 REL = ("{id: %(r)s.id, tipo: type(%(r)s), a: startNode(%(r)s).key, b: endNode(%(r)s).key, "
        "evidencia: %(r)s.evidencia, fontes: %(r)s.fontes}")
@@ -48,12 +48,12 @@ def texto_fulltext(pergunta: str) -> str:
 
 
 def cosseno(score_neo4j: float) -> float:
-    """O Neo4j devolve (1 + cos) / 2; a confiança usa o cosseno bruto."""
+    """O Neo4j devolve (1 + cos) / 2 e a confiança usa o cosseno."""
     return round(2 * float(score_neo4j) - 1, 4)
 
 
 def adicionar_fontes(ctx: Contexto, limite: int = 5) -> None:
-    """Do fato ao texto: inclui os chunks de origem dos fatos mais diretos."""
+    """Inclui no contexto os chunks de onde vieram os fatos mais próximos."""
     ids = [i for f in sorted(ctx.fatos.values(), key=lambda f: f.salto) for i in f.fontes]
     ids = [i for i in dict.fromkeys(ids) if i not in ctx.trechos][:limite]
     if not ids:
@@ -96,7 +96,7 @@ def _contexto_de_registros(registros: list[Any]) -> Contexto:
 
 
 def _completar_entidades(ctx: Contexto) -> None:
-    """Garante nome e rótulo para toda ponta de fato (ex.: origem vinda do salto 2)."""
+    """Garante nome e rótulo para as duas pontas de cada fato."""
     faltam = {k for f in ctx.fatos.values() for k in (f.origem, f.destino)} - set(ctx.entidades)
     if not faltam:
         return
@@ -121,7 +121,7 @@ def busca_hibrida(pergunta: str, top_k: int | None = None) -> Contexto:
 
 
 def busca_vetorial(pergunta: str, top_k: int | None = None) -> Contexto:
-    """Baseline: só similaridade de cosseno nos chunks, sem grafo."""
+    """Baseline que usa só a similaridade de cosseno nos chunks, sem grafo."""
     k = top_k or get_settings().retrieval_top_k
     ret = VectorRetriever(db.get_driver(), "chunk_embedding", embedder=get_embedder(),
                           return_properties=["id", "texto", "rotulo", "doc_id"])

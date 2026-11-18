@@ -1,6 +1,6 @@
-"""Contexto recuperado: trechos, fatos (relações), entidades e o rastro de como foi obtido.
+"""Contexto recuperado com trechos, fatos, entidades e os passos usados para chegar nele.
 
-Tudo que o LLM pode citar tem um id: [n:<chunk ou chave de entidade>] ou [r:<id da relação>].
+Tudo que o LLM pode citar tem um id, [n:...] para chunks e entidades e [r:...] para relações.
 """
 
 from dataclasses import dataclass, field
@@ -54,7 +54,7 @@ class Contexto:
     entidades: dict[str, EntidadeCtx] = field(default_factory=dict)
     fatos: dict[str, Fato] = field(default_factory=dict)
     linhas_cypher: list[dict[str, Any]] = field(default_factory=list)
-    resumos: dict[str, str] = field(default_factory=dict)  # comunidade -> resumo
+    resumos: dict[str, str] = field(default_factory=dict)  # resumo de cada comunidade
     caminhos: list[list[str]] = field(default_factory=list)  # ids de nós e relações em ordem
     cyphers: list[str] = field(default_factory=list)
     passos: list[Passo] = field(default_factory=list)
@@ -63,7 +63,7 @@ class Contexto:
         return (set(self.trechos) | set(self.entidades) | set(self.fatos) | set(self.resumos))
 
     def similaridade(self) -> float:
-        """Média das 3 maiores similaridades; contexto só estrutural conta 1.0 se não vazio."""
+        """Média das 3 maiores similaridades. Contexto só estrutural e não vazio conta 1.0."""
         scores = sorted((t.score for t in self.trechos.values() if t.score > 0), reverse=True)[:3]
         if scores:
             return sum(scores) / len(scores)
@@ -96,7 +96,7 @@ class Contexto:
         trechos = sorted(self.trechos.values(), key=lambda t: -t.score)[:max_trechos]
         if trechos:
             partes.append("## Trechos de documentos")
-            partes += [f"[n:{t.id}] ({t.titulo} — {t.rotulo})\n{t.texto}" for t in trechos]
+            partes += [f"[n:{t.id}] ({t.titulo}, {t.rotulo})\n{t.texto}" for t in trechos]
         if self.fatos:
             partes.append("## Fatos do grafo (origem -TIPO-> destino)")
             ordem = sorted(self.fatos.values(), key=lambda f: (f.salto, f.tipo))[:max_fatos]

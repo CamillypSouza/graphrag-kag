@@ -68,7 +68,7 @@ def test_agrupar_por_fuzzy_e_embedding_com_travas() -> None:
         Candidata("c:5", "Sujeito", "dado pessoal", 2, [0.5, 0.5]),
         Candidata("c:6", "Sujeito", "dado pessoal sensível", 2, [0.5, 0.5]),
     ]
-    grupos = {g.manter: g for g in agrupar(cands, 90, 0.99)}  # fuzzy = 90.9
+    grupos = {g.manter: g for g in agrupar(cands, 90, 0.99)}  # fuzzy dá 90.9
     assert grupos["s:1"].fundir == ["s:2"] and grupos["s:1"].metodo == "fuzzy"
     assert grupos["s:3"].fundir == ["s:4"] and grupos["s:3"].metodo == "embedding"
     assert "c:5" not in grupos and "c:6" not in grupos

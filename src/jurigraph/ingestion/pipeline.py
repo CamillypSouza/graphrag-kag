@@ -1,7 +1,7 @@
-"""Ingestão completa: carga -> chunks -> extração (regras + LLM) -> MERGE -> resolução.
+"""Ingestão completa, da carga dos documentos até a resolução de entidades.
 
-Idempotente e retomável: documentos cujo hash não mudou são pulados e as respostas
-do LLM ficam em cache por trecho.
+Pode rodar de novo sem duplicar nada. Documentos com o mesmo hash são pulados e as
+respostas do LLM ficam em cache por trecho.
 """
 
 import argparse
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 
 class Estado:
-    """Hash de cada documento já ingerido (data/state/ingest.json)."""
+    """Guarda o hash de cada documento já ingerido em data/state/ingest.json."""
 
     def __init__(self) -> None:
         self.arquivo = get_settings().data_dir / "state" / "ingest.json"
@@ -63,7 +63,7 @@ def executar(limite: int | None = None, usar_llm: bool = True, forcar: bool = Fa
 
 
 async def _executar(limite: int | None, usar_llm: bool, forcar: bool) -> dict:
-    """Um único event loop para todo o lote (o cliente assíncrono do LLM é reaproveitado)."""
+    """Usa um único event loop para todos os documentos."""
     apply_schema()
     estado = Estado()
     docs = carregar(get_settings().data_dir / "raw")[:limite]

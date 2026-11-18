@@ -18,7 +18,7 @@ RETURN [n IN nodes(p) | n {.key, .nome, .descricao, .pagerank,
 
 
 def ligar_entidades(texto: str, k: int = 3) -> list[EntidadeCtx]:
-    """Entidades do grafo mais prováveis para um texto (fulltext + vetor em entity_*)."""
+    """Entidades do grafo mais parecidas com o texto, por fulltext e por vetor."""
     termos = texto_fulltext(texto)
     linhas = db.run(
         "CALL () { CALL db.index.fulltext.queryNodes('entity_text', $t, {limit: $k}) YIELD node, score "
@@ -35,7 +35,7 @@ def ligar_entidades(texto: str, k: int = 3) -> list[EntidadeCtx]:
 
 
 def caminho_minimo(a: str, b: str) -> Contexto:
-    """Menor caminho entre duas entidades, só por relações semânticas/estruturais."""
+    """Menor caminho entre duas entidades, sem passar por menções e comunidades."""
     ctx = Contexto()
     linhas = db.run(CAMINHO, a=a, b=b)
     if not linhas:
@@ -60,7 +60,7 @@ def caminho_minimo(a: str, b: str) -> Contexto:
 
 
 def resumos_relevantes(pergunta: str, k: int = 3) -> Contexto:
-    """Resumos de comunidade mais próximos da pergunta (perguntas globais)."""
+    """Resumos de comunidade mais próximos da pergunta, usados nas perguntas globais."""
     ctx = Contexto()
     for r in db.run(
         "CALL db.index.vector.queryNodes('community_embedding', $k, $v) YIELD node, score "

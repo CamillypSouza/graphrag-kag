@@ -23,7 +23,7 @@ class Estrito(BaseModel):
 
 @dataclass
 class Usage:
-    """Tokens consumidos desde o último reset (thread-safe)."""
+    """Tokens consumidos desde o último reset."""
 
     chamadas: int = 0
     entrada: int = 0
@@ -89,7 +89,7 @@ def make_llm(model: str | None = None) -> LLMInterface:
 
 @lru_cache
 def get_embedder() -> Embedder:
-    """Embedder configurado (local por padrão); a dimensão deve bater com o índice."""
+    """Embedder configurado, local por padrão. A dimensão precisa bater com o índice."""
     s = get_settings()
     if s.embedding_provider == "openai":
         from neo4j_graphrag.embeddings import OpenAIEmbeddings
@@ -102,7 +102,7 @@ def get_embedder() -> Embedder:
 
 
 def embed_batch(textos: list[str]) -> list[list[float]]:
-    """Embeddings em lote (rápido no sentence-transformers; um a um nos demais)."""
+    """Embeddings em lote no sentence-transformers e um a um nos outros provedores."""
     emb = get_embedder()
     modelo = getattr(emb, "model", None)
     if modelo is not None and hasattr(modelo, "encode"):

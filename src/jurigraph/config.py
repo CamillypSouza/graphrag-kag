@@ -1,4 +1,4 @@
-"""Configuração lida do .env (nunca versionado)."""
+"""Configuração lida do arquivo .env, que não vai para o git."""
 
 from functools import lru_cache
 from pathlib import Path
@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
-    """Parâmetros do sistema; todos sobrescrevíveis por variável de ambiente."""
+    """Parâmetros do sistema, todos podem ser trocados por variável de ambiente."""
 
     model_config = SettingsConfigDict(env_file=ROOT / ".env", extra="ignore")
 

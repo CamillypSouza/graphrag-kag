@@ -1,4 +1,4 @@
-"""Integração com o Neo4j populado: idempotência, sessão de leitura e travessia multi-hop."""
+"""Testes com o Neo4j populado para idempotência, sessão de leitura e travessia multi-hop."""
 
 import neo4j
 import pytest

@@ -1,8 +1,8 @@
-"""Planejador estilo KAG: decompõe a pergunta em passos lógicos e encadeia os resultados.
+"""Planejador no estilo KAG que divide a pergunta em passos e encadeia os resultados.
 
-Cada passo é uma busca (vetorial/híbrida), uma consulta Cypher, um caminho mínimo entre
-entidades ou a leitura de resumos de comunidade. O resultado de um passo entra como
-contexto no objetivo dos passos que dependem dele (placeholder {p1}, {p2}...).
+Cada passo é uma busca, uma consulta Cypher, um caminho mínimo entre entidades ou a
+leitura de resumos de comunidade. O resultado de um passo entra no objetivo dos passos
+que dependem dele pelos marcadores {p1}, {p2} etc.
 """
 
 import logging
@@ -62,7 +62,7 @@ def planejar(pergunta: str) -> Plano:
 def _resumo_resultado(ctx: Contexto, limite: int = 8) -> str:
     """Resultado curto de um passo para alimentar o seguinte."""
     nomes = [e.nome for e in sorted(ctx.entidades.values(), key=lambda e: -e.pagerank)[:limite]]
-    rotulos = [f"{t.titulo} — {t.rotulo}" for t in list(ctx.trechos.values())[:3]]
+    rotulos = [f"{t.titulo}, {t.rotulo}" for t in list(ctx.trechos.values())[:3]]
     linhas = [str(l) for l in ctx.linhas_cypher[:5]]
     return "; ".join(nomes + rotulos + linhas)[:800] or "(sem resultado)"
 
@@ -82,7 +82,7 @@ def _executar_passo(p: PassoPlano, objetivo: str, pergunta: str) -> Contexto:
 
 
 def _ordenar(passos: list[PassoPlano]) -> list[PassoPlano]:
-    """Ordem topológica pelas dependências; ciclos e ids inexistentes não travam."""
+    """Ordena os passos pelas dependências sem travar em ciclos ou ids inexistentes."""
     ids = {p.id for p in passos}
     feitos: set[str] = set()
     ordem, pendentes = [], list(passos)

@@ -1,4 +1,4 @@
-"""Orquestração: recuperar -> gerar -> verificar, nos três modos comparados na avaliação."""
+"""Recupera, gera e verifica a resposta nos três modos da avaliação."""
 
 import time
 from dataclasses import dataclass
@@ -48,7 +48,7 @@ def recuperar(pergunta: str, modo: Modo) -> Contexto:
 
 
 def responder(pergunta: str, modo: Modo = "hibrido") -> Resposta:
-    """Pipeline completo com medição de latência e tokens."""
+    """Responde a pergunta medindo o tempo e os tokens gastos."""
     USAGE.reset()
     t0 = time.perf_counter()
     ctx = recuperar(pergunta, modo)

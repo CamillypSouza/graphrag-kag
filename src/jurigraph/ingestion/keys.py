@@ -1,9 +1,9 @@
-"""Chaves canônicas: a mesma entidade sempre gera a mesma chave."""
+"""Chaves canônicas, a mesma entidade sempre gera a mesma chave."""
 
 import re
 import unicodedata
 
-# Siglas e apelidos conhecidos -> nome canônico (resolução por dicionário).
+# siglas e apelidos conhecidos e o nome canônico de cada um
 ALIASES: dict[str, str] = {
     "anpd": "autoridade nacional de protecao de dados",
     "autoridade nacional": "autoridade nacional de protecao de dados",
@@ -17,7 +17,7 @@ ALIASES: dict[str, str] = {
     "cgi": "comite gestor da internet no brasil",
 }
 
-# Apelidos de normas -> (tipo, número)
+# apelidos de normas com o tipo e o número
 NORMAS_POR_APELIDO: dict[str, tuple[str, str]] = {
     "lgpd": ("lei", "13709"),
     "lei geral de protecao de dados": ("lei", "13709"),
@@ -39,7 +39,7 @@ def sem_acento(texto: str) -> str:
 
 
 def normalizar_nome(nome: str) -> str:
-    """Minúsculas, sem acento, sem pontuação de borda, espaços simples."""
+    """Deixa em minúsculas, sem acento, sem pontuação nas pontas e com espaço simples."""
     t = sem_acento(nome).lower().strip()
     t = re.sub(r"[\"'“”‘’()\[\]]", "", t)
     t = re.sub(r"\s+", " ", t).strip(" .,;:-")
@@ -51,12 +51,12 @@ def slug(texto: str) -> str:
 
 
 def numero_norma(numero: str) -> str:
-    """'13.709' -> '13709'; '8.078/90' -> '8078'."""
+    """Remove pontos e o ano, por exemplo '8.078/90' vira '8078'."""
     return re.sub(r"\D", "", numero.split("/")[0])
 
 
 def numero_artigo(numero: str, sufixo: str | None = None) -> str:
-    """'7º' -> '7'; '1.021' -> '1021'; ('4', 'A') -> '4-a'."""
+    """Normaliza o número do artigo, por exemplo '7º' vira '7' e 4-A vira '4-a'."""
     base = re.sub(r"\D", "", numero)
     return f"{base}-{sufixo.lower()}" if sufixo else base
 
@@ -66,7 +66,7 @@ def norma_key(tipo: str, numero: str) -> str:
 
 
 def artigo_key(norma: str, artigo: str) -> str:
-    """norma = chave da norma (ex.: 'lei:13709'); artigo já normalizado."""
+    """Chave do artigo a partir da chave da norma e do número já normalizado."""
     return f"artigo:{norma.replace(':', '-')}:{artigo}"
 
 

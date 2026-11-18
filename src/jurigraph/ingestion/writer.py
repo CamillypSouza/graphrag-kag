@@ -1,4 +1,4 @@
-"""Gravação idempotente no Neo4j (tudo com MERGE, em lotes com UNWIND)."""
+"""Gravação no Neo4j com MERGE em lotes, sem duplicar ao rodar de novo."""
 
 from dataclasses import asdict
 
@@ -46,7 +46,7 @@ def gravar_documento(doc: Documento, trechos: list[Trecho]) -> None:
 
 
 def gravar_extracao(ext: Extracao) -> None:
-    """Entidades (MERGE pela chave canônica), relações tipadas e menções."""
+    """Grava entidades pela chave canônica, relações tipadas e menções."""
     ents = [{"key": e.key, "label": e.label, "nome": e.nome, "descricao": e.descricao,
              "props": e.props} for e in ext.entidades.values()]
     for lote in _lotes(ents):

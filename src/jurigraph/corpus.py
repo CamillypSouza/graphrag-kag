@@ -1,8 +1,8 @@
-"""Baixa o corpus público (planalto.gov.br e STF) e grava em data/raw.
+"""Baixa o corpus público do planalto.gov.br e do STF e grava em data/raw.
 
-Cada lei é cortada por CAPÍTULO; cada capítulo vira um documento com metadados.
-Texto revogado (riscado no site) é descartado; notas de redação são mantidas,
-pois viram relações ALTERA/CITA.
+Cada lei é dividida por capítulo e cada capítulo vira um documento com metadados.
+O texto revogado (riscado no site) é descartado. As notas de redação ficam porque
+viram relações ALTERA e CITA.
 """
 
 import hashlib
@@ -43,7 +43,7 @@ LEIS: list[dict[str, str | int]] = [
      "url": f"{PLANALTO}/_ato2011-2014/2013/decreto/d7962.htm"},
 ]
 STF_TEMA_URL = "https://portal.stf.jus.br/jurisprudenciaRepercussao/tema.asp?num={num}"
-# Candidatos; só ficam os que citam alguma lei do corpus (filtro em _tema_relevante).
+# Temas candidatos, só ficam os que citam alguma lei do corpus (ver _tema_relevante)
 STF_TEMAS = [987, 533, 210, 1141, 1075, 1066, 786, 1093, 1248, 362, 1056]
 TERMOS_RELEVANTES = ("12.965", "13.709", "8.078", "12.527", "consumidor", "dados pessoais",
                      "marco civil", "provedor", "acesso à informação")
@@ -88,7 +88,7 @@ def _get_com_cache(url: str) -> str:
 
 
 def decodificar(conteudo: bytes) -> str:
-    """UTF-8 quando válido; senão windows-1252 (padrão das páginas do planalto)."""
+    """Usa UTF-8 quando for válido, senão windows-1252 que é o padrão do planalto."""
     try:
         return conteudo.decode("utf-8")
     except UnicodeDecodeError:
@@ -99,7 +99,7 @@ BLOCOS = ["p", "h1", "h2", "h3", "h4", "h5", "li", "td"]
 
 
 def html_para_texto(html: str, por_paragrafo: bool = True) -> str:
-    """Texto limpo sem trechos revogados (riscados); um parágrafo por linha se pedido."""
+    """Texto limpo sem os trechos revogados, com um parágrafo por linha se pedido."""
     soup = BeautifulSoup(html, "html.parser")
     for tag in soup(["script", "style", "strike", "s", "del"]):
         tag.decompose()
@@ -113,7 +113,7 @@ CAPITULO_RE = re.compile(r"^CAP[IÍ]TULO\s+([IVXLC]+(?:-[A-Z])?)\b.*$", re.MULTI
 
 
 def dividir_por_capitulo(texto: str) -> list[tuple[str, str]]:
-    """Divide em (rótulo, texto) por CAPÍTULO; capítulos curtos juntam com o seguinte."""
+    """Divide o texto por capítulo e junta os capítulos curtos com o seguinte."""
     marcas = list(CAPITULO_RE.finditer(texto))
     if not marcas:
         return [("integral", texto)]
@@ -174,7 +174,7 @@ def baixar_temas_stf() -> list[RawDoc]:
 
 
 def gravar(docs: list[RawDoc], pasta: Path) -> None:
-    """Grava .txt + .json por documento, o índice FONTES.md e o manifest.json (lista oficial)."""
+    """Grava o .txt e o .json de cada documento, o FONTES.md e o manifest.json."""
     pasta.mkdir(parents=True, exist_ok=True)
     for d in docs:
         (pasta / f"{d.id}.txt").write_text(d.texto, encoding="utf-8")

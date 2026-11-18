@@ -1,4 +1,4 @@
-"""DDL idempotente: constraints e índices (Cypher 25, Neo4j 2026.10)."""
+"""Constraints e índices do Neo4j, todos com IF NOT EXISTS."""
 
 from dataclasses import dataclass
 
@@ -8,7 +8,7 @@ from jurigraph.config import get_settings
 @dataclass(frozen=True)
 class Ddl:
     nome: str
-    tipo: str  # constraint | range | fulltext | vector
+    tipo: str  # constraint, range, fulltext ou vector
     cypher: str
 
 

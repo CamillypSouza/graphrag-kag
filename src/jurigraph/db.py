@@ -10,7 +10,7 @@ import neo4j
 from jurigraph.config import get_settings
 
 log = logging.getLogger(__name__)
-# O neo4j-graphrag ainda usa db.index.fulltext.queryNodes (depreciado no Cypher 25).
+# o neo4j-graphrag ainda usa db.index.fulltext.queryNodes, que gera aviso no Cypher 25
 logging.getLogger("neo4j.notifications").setLevel(logging.ERROR)
 _driver: neo4j.Driver | None = None
 
@@ -37,7 +37,7 @@ def close_driver() -> None:
 
 
 def run(query: str, **params: Any) -> list[dict[str, Any]]:
-    """Executa uma query de escrita/leitura e devolve as linhas como dicts."""
+    """Executa uma query e devolve as linhas como dicionários."""
     records, _, _ = get_driver().execute_query(
         query, params, database_=get_settings().neo4j_database
     )
@@ -46,7 +46,7 @@ def run(query: str, **params: Any) -> list[dict[str, Any]]:
 
 @contextmanager
 def read_session(timeout: float | None = None) -> Iterator[neo4j.Session]:
-    """Sessão em modo leitura: o servidor recusa qualquer escrita."""
+    """Sessão em modo leitura, o servidor recusa qualquer escrita."""
     with get_driver().session(
         database=get_settings().neo4j_database, default_access_mode=neo4j.READ_ACCESS
     ) as session:

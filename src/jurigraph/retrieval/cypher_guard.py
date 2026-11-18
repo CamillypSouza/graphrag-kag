@@ -1,6 +1,6 @@
-"""Validador de Cypher gerado por LLM: somente leitura, procedimentos permitidos e LIMIT.
+"""Validador do Cypher gerado pelo LLM. Só deixa passar leitura, procedimentos permitidos e LIMIT.
 
-É a primeira barreira; a segunda é a sessão em modo READ (o servidor recusa escrita).
+É a primeira barreira. A segunda é a sessão em modo READ, onde o servidor recusa escrita.
 """
 
 import re
@@ -45,7 +45,7 @@ def _permitido(nome: str) -> bool:
 
 
 def validar(cypher: str, max_limit: int) -> Validacao:
-    """Valida e normaliza (remove ';' final, força LIMIT <= max_limit)."""
+    """Valida a consulta, tira o ';' do final e limita o LIMIT a max_limit."""
     q = cypher.strip().rstrip(";").strip()
     if not q:
         return Validacao(False, q, "consulta vazia")

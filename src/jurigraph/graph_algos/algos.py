@@ -1,6 +1,6 @@
-"""PageRank e Leiden (GDS, com networkx como reserva) e resumos de comunidade (LLM).
+"""PageRank e Leiden no GDS (networkx como reserva) e resumos de comunidade com LLM.
 
-A projeção usa só nós :Entity e todas as relações entre eles, sem direção; chunks,
+A projeção usa só os nós Entity e as relações entre eles, sem direção. Chunks,
 menções e comunidades ficam de fora.
 """
 
@@ -40,7 +40,7 @@ def pagerank_e_leiden_gds() -> dict[str, Any]:
 
 
 def pagerank_e_louvain_networkx() -> dict[str, Any]:
-    """Reserva sem GDS: mesmo resultado lógico com networkx (Louvain no lugar de Leiden)."""
+    """Alternativa sem GDS usando networkx, com Louvain no lugar de Leiden."""
     import networkx as nx
 
     grafo = nx.Graph()
@@ -86,7 +86,7 @@ def _membros_e_fatos(comunidade: int) -> tuple[list[dict], list[str]]:
 
 
 def resumir_comunidades(maximo: int = 30) -> int:
-    """Cria nós Community (título, resumo, embedding) para as maiores comunidades."""
+    """Cria nós Community com título, resumo e embedding para as maiores comunidades."""
     from neo4j_graphrag.types import LLMMessage
 
     db.run("MATCH (k:Community) DETACH DELETE k")
@@ -118,7 +118,7 @@ def resumir_comunidades(maximo: int = 30) -> int:
 def executar(maximo_resumos: int = 30) -> dict[str, Any]:
     try:
         relatorio = pagerank_e_leiden_gds()
-    except Exception as exc:  # GDS ausente ou recusado: registra e usa a reserva
+    except Exception as exc:  # se o GDS não estiver disponível usa o networkx
         log.warning("GDS indisponível (%s); usando networkx", exc)
         relatorio = pagerank_e_louvain_networkx()
     relatorio["resumos_de_comunidade"] = resumir_comunidades(maximo_resumos)

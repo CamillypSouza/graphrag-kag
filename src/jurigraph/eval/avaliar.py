@@ -1,12 +1,12 @@
-"""Avaliação comparativa: RAG vetorial x GraphRAG híbrido x GraphRAG com planejador KAG.
+"""Avaliação comparativa entre RAG vetorial, GraphRAG híbrido e GraphRAG com planejador KAG.
 
-Métricas por modo:
-- acerto: juiz LLM compara a resposta final com a esperada (correta=1, parcial=0,5);
-  nas perguntas impossíveis, acerto = recusar.
-- alucinação bruta: % de afirmações geradas que o verificador não sustentou (antes do filtro).
-- impossíveis respondidas: % de perguntas sem resposta no corpus em que o sistema não recusou.
-- fidelidade das citações: % de afirmações cujas citações existem no subgrafo recuperado.
-- latência e custo: medidos por pergunta (o juiz de avaliação não entra no custo).
+Métricas calculadas em cada modo
+- acerto, o juiz LLM compara a resposta com a esperada (correta 1, parcial 0,5).
+  Nas perguntas impossíveis o acerto é recusar.
+- alucinação bruta, porcentagem de afirmações que o verificador não sustentou.
+- impossíveis respondidas, perguntas sem resposta no corpus em que o sistema não recusou.
+- fidelidade das citações, afirmações cujas citações existem no subgrafo recuperado.
+- latência e custo por pergunta (o juiz da avaliação não entra no custo).
 """
 
 import argparse
@@ -111,13 +111,13 @@ def _metricas(rs: list[Resultado]) -> dict[str, str]:
     lat = sorted(r.segundos for r in rs)
     com_afs = [r for r in rs if r.afirmacoes]
     return {
-        "Acerto (respondíveis)": _pct(statistics.mean(r.acerto for r in respondiveis)) if respondiveis else "—",
-        "Acerto (impossíveis = recusa)": _pct(statistics.mean(r.acerto for r in impossiveis)) if impossiveis else "—",
-        "Palavras-chave presentes": _pct(statistics.mean(r.chaves_ok for r in respondiveis)) if respondiveis else "—",
-        "Alucinação bruta (afirmações não sustentadas)": _pct(sum(r.nao_sustentadas for r in rs) / afs) if afs else "—",
-        "Impossíveis respondidas": _pct(statistics.mean(not r.recusou for r in impossiveis)) if impossiveis else "—",
-        "Fidelidade das citações": _pct(statistics.mean(r.citacoes_validas for r in com_afs)) if com_afs else "—",
-        "Recusas em respondíveis": _pct(statistics.mean(r.recusou for r in respondiveis)) if respondiveis else "—",
+        "Acerto (respondíveis)": _pct(statistics.mean(r.acerto for r in respondiveis)) if respondiveis else "-",
+        "Acerto (impossíveis = recusa)": _pct(statistics.mean(r.acerto for r in impossiveis)) if impossiveis else "-",
+        "Palavras-chave presentes": _pct(statistics.mean(r.chaves_ok for r in respondiveis)) if respondiveis else "-",
+        "Alucinação bruta (afirmações não sustentadas)": _pct(sum(r.nao_sustentadas for r in rs) / afs) if afs else "-",
+        "Impossíveis respondidas": _pct(statistics.mean(not r.recusou for r in impossiveis)) if impossiveis else "-",
+        "Fidelidade das citações": _pct(statistics.mean(r.citacoes_validas for r in com_afs)) if com_afs else "-",
+        "Recusas em respondíveis": _pct(statistics.mean(r.recusou for r in respondiveis)) if respondiveis else "-",
         "Latência média (s)": f"{statistics.mean(lat):.1f}",
         "Latência p95 (s)": f"{lat[min(len(lat) - 1, math.ceil(0.95 * len(lat)) - 1)]:.1f}",
         "Custo total (US$)": f"{sum(r.custo_usd for r in rs):.3f}",
@@ -184,7 +184,7 @@ def _esc(t: str) -> str:
 
 
 def tabela_latex(rs: list[Resultado]) -> str:
-    """Tabelas do artigo geradas dos resultados (sem número digitado à mão)."""
+    """Gera as tabelas do artigo direto dos resultados."""
     modos = [m for m in MODOS if any(r.modo == m for r in rs)]
     met = {m: _metricas([r for r in rs if r.modo == m]) for m in modos}
     cab = " & ".join(["Métrica"] + [LATEX_MODOS[m] for m in modos])
@@ -232,7 +232,7 @@ def main() -> None:
         for p in perguntas:
             try:
                 r = avaliar_um(p, modo)
-            except Exception as exc:  # registra e segue; uma falha conta como erro do modo
+            except Exception as exc:  # registra o erro e continua, a falha conta contra o modo
                 log.warning("%s/%s falhou: %s", modo, p["id"], exc)
                 r = Resultado(p["id"], p["tipo"], modo, p["pergunta"], f"ERRO: {exc}", True, 0.0,
                               "incorreta", "erro de execução", False, 0, 0, 0.0, 0.0, 0.0, 0.0, 0, [])

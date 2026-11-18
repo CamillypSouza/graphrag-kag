@@ -1,4 +1,4 @@
-"""Modelo LPG do domínio jurídico: labels, relações e padrões permitidos."""
+"""Modelo LPG do domínio jurídico com labels, relações e padrões permitidos."""
 
 from dataclasses import dataclass
 
@@ -46,7 +46,7 @@ SEMANTIC_RELATIONS: tuple[RelType, ...] = (
     RelType("EDITADA_POR", "Precedente foi firmado por um tribunal."),
 )
 
-# Padrões (origem, relação, destino) aceitos na extração; fora disso é descartado.
+# padrões (origem, relação, destino) aceitos na extração, o resto é descartado
 PATTERNS: tuple[tuple[str, str, str], ...] = (
     ("Lei", "CONTEM", "Artigo"),
     ("Artigo", "CITA", "Artigo"),

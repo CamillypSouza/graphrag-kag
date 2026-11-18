@@ -1,9 +1,9 @@
-"""Verificação pós-geração e score de confiança explicável.
+"""Verificação depois da geração e cálculo da confiança.
 
-1. Citações: cada id citado existe no subgrafo recuperado?
-2. Sustentação: um juiz LLM confere cada afirmação contra o texto dos itens citados.
-3. Confiança = 0,4·similaridade + 0,3·cobertura de citações + 0,3·taxa de sustentação.
-Afirmações sem citação válida ou não sustentadas são removidas da resposta final.
+1. Confere se cada id citado existe no subgrafo recuperado.
+2. Um juiz LLM confere cada afirmação contra o texto dos itens citados.
+3. Confiança = 0,4 x similaridade + 0,3 x citações válidas + 0,3 x afirmações sustentadas.
+Afirmações sem citação válida ou sem sustentação saem da resposta final.
 """
 
 import re
@@ -60,7 +60,7 @@ números, prazos ou exceções que não estão na evidência = NÃO sustentada.
 def _texto_do_item(i: str, ctx: Contexto) -> str:
     if i in ctx.trechos:
         t = ctx.trechos[i]
-        return f"{t.titulo} — {t.rotulo}: {t.texto}"
+        return f"{t.titulo}, {t.rotulo}\n{t.texto}"
     if i in ctx.fatos:
         f = ctx.fatos[i]
         base = f"{ctx.nome(f.origem)} -{f.tipo}-> {ctx.nome(f.destino)}"
@@ -72,7 +72,7 @@ def _texto_do_item(i: str, ctx: Contexto) -> str:
 
 
 def _fontes(ids: list[str]) -> str:
-    """Texto dos chunks de origem de um fato (do fato ao texto)."""
+    """Texto dos chunks de onde o fato foi extraído."""
     if not ids:
         return ""
     linhas = db.run("MATCH (c:Chunk) WHERE c.id IN $ids RETURN c.rotulo AS r, c.texto AS t",

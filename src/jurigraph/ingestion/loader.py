@@ -7,7 +7,7 @@ from jurigraph.ingestion.records import Documento
 
 
 def carregar(pasta: Path) -> list[Documento]:
-    """Lê .json (metadados) e .txt (texto) de cada id do manifesto."""
+    """Lê o .json com os metadados e o .txt com o texto de cada documento."""
     ids: list[str] = json.loads((pasta / "manifest.json").read_text(encoding="utf-8"))
     docs = []
     for doc_id in ids:

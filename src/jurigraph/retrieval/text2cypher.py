@@ -1,4 +1,4 @@
-"""Text-to-Cypher: schema real do banco + few-shot jurídico + validador + EXPLAIN + 1 retentativa."""
+"""Text-to-Cypher com o schema do banco, exemplos jurídicos, validador, EXPLAIN e nova tentativa."""
 
 import logging
 import re
@@ -121,7 +121,7 @@ def _valor(v: Any, ctx: Contexto) -> Any:
 
 
 def _hidratar_ids(ctx: Contexto) -> None:
-    """Ids de relação e chaves que vieram como texto viram fatos/entidades citáveis."""
+    """Transforma ids e chaves que vieram como texto em fatos e entidades citáveis."""
     textos = {str(x) for linha in ctx.linhas_cypher for x in _achatar(linha)}
     rels = [t for t in textos if t.startswith("r-")]
     if rels:
@@ -163,7 +163,7 @@ def executar_leitura(cypher: str) -> list[dict[str, Any]]:
 
 
 def text2cypher(pergunta: str) -> Contexto:
-    """Gera, valida e executa o Cypher; em erro, tenta de novo com a mensagem no prompt."""
+    """Gera, valida e executa o Cypher, e em caso de erro tenta de novo mandando a mensagem."""
     s = get_settings()
     llm = make_llm()
     ctx = Contexto()

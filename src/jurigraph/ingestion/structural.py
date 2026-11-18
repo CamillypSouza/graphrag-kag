@@ -1,6 +1,6 @@
-"""Camada estrutural (regras): normas, artigos, precedentes, remissões e alterações.
+"""Camada estrutural feita com regras para normas, artigos, precedentes, remissões e alterações.
 
-Confiança 1.0: tudo aqui sai de padrões fixos do texto legal brasileiro.
+Tudo aqui tem confiança 1.0 porque sai de padrões fixos do texto legal brasileiro.
 """
 
 import re
@@ -63,7 +63,7 @@ def _artigo(norma: Entidade, num: str) -> Entidade:
 
 
 def _norma_alvo(trecho_depois: str) -> tuple[str, Entidade | None]:
-    """Para uma remissão a artigo: 'propria', 'constituicao' ou outra norma."""
+    """Diz se a remissão é para a própria norma, para a Constituição ou para outra norma."""
     janela = trecho_depois[:JANELA_ALVO]
     if re.search(r"\b(desta Lei|deste Decreto|deste Código|desta Lei Complementar)\b", janela):
         return "propria", None
@@ -77,7 +77,7 @@ def _norma_alvo(trecho_depois: str) -> tuple[str, Entidade | None]:
 
 
 def _remissoes(t: Trecho, origem: Entidade, norma: Entidade, ext: Extracao, tipo_rel: str) -> None:
-    """art. X (desta Lei | da Lei nº Y) -> CITA/INTERPRETA artigo; 'Lei nº Y' -> norma."""
+    """Remissões a artigos viram CITA ou INTERPRETA e menções a outra lei viram CITA da norma."""
     for m in ARTS_RE.finditer(t.texto):
         destino_tipo, outra = _norma_alvo(t.texto[m.end():])
         base = norma if destino_tipo == "propria" else outra
@@ -106,7 +106,7 @@ def _remissoes(t: Trecho, origem: Entidade, norma: Entidade, ext: Extracao, tipo
 
 
 def _alteracoes(t: Trecho, artigo: Entidade, ext: Extracao) -> None:
-    """(Redação dada pela Lei nº X) -> Lei X ALTERA artigo; (Revogado...) -> REVOGA."""
+    """Notas de redação viram ALTERA e notas de revogação viram REVOGA."""
     for m in ALTERACAO_RE.finditer(t.texto):
         nota = m.group(1).lower()
         if nota in ("vide", "vigência"):

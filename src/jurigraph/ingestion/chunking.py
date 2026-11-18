@@ -1,4 +1,4 @@
-"""Corte em trechos: um por artigo; artigos longos e textos sem artigo viram janelas."""
+"""Divide o texto em trechos, um por artigo, e usa janelas para artigos longos."""
 
 import re
 
@@ -13,7 +13,7 @@ JANELA = 1200
 
 
 def _janelas(texto: str, tamanho: int = JANELA) -> list[str]:
-    """Junta linhas até ~tamanho; a última linha de uma janela abre a seguinte."""
+    """Junta linhas até o tamanho máximo, repetindo a última linha na janela seguinte."""
     linhas, partes, atual = texto.splitlines(), [], []
     for ln in linhas:
         if atual and sum(len(x) for x in atual) + len(ln) > tamanho:
