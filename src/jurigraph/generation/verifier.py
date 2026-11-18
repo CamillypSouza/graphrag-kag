@@ -81,7 +81,7 @@ def _fontes(ids: list[str]) -> str:
 
 
 def _julgar(afs: list[AfirmacaoVerificada], ctx: Contexto) -> None:
-    candidatas = [(k, a) for k, a in enumerate(afs) if a.citacoes and not a.citacoes_invalidas]
+    candidatas = [(k, a) for k, a in enumerate(afs) if a.citacoes]
     if not candidatas:
         return
     blocos = "\n\n".join(
@@ -108,11 +108,12 @@ def verificar(resposta: RespostaLLM, ctx: Contexto) -> Verificacao:
     if not resposta.suficiente or not afs:
         return v
     _julgar(afs, ctx)
-    v.cobertura = sum(bool(a.citacoes) and not a.citacoes_invalidas for a in afs) / len(afs)
+    total_cit = sum(len(a.citacoes) + len(a.citacoes_invalidas) for a in afs)
+    v.cobertura = sum(len(a.citacoes) for a in afs) / total_cit if total_cit else 0.0
     v.sustentacao = sum(a.sustentada for a in afs) / len(afs)
     v.confianca = round(PESOS["similaridade"] * v.similaridade + PESOS["cobertura"] * v.cobertura
                         + PESOS["sustentacao"] * v.sustentacao, 3)
-    mantidas = [a for a in afs if a.sustentada and a.citacoes and not a.citacoes_invalidas]
+    mantidas = [a for a in afs if a.sustentada and a.citacoes]
     if mantidas and v.confianca >= get_settings().min_evidence_score:
         v.resposta_final = " ".join(
             f"{a.texto} " + " ".join(f"[{'r' if c.startswith('r-') else 'n'}:{c}]"

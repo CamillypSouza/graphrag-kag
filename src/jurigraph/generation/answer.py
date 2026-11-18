@@ -13,7 +13,10 @@ Responda SOMENTE com base no CONTEXTO fornecido. Não use conhecimento externo.
 Divida a resposta em afirmações curtas. Cada afirmação deve citar entre 1 e 4 ids
 do contexto, exatamente como aparecem: [n:...] para trechos, entidades e comunidades,
 [r:...] para fatos. Prefira citar o trecho de lei que sustenta a afirmação.
-Se o contexto não permitir responder, marque suficiente=false e não invente.
+Se o contexto responder só em parte, marque suficiente=true, responda o que ele sustenta
+e termine com uma afirmação dizendo o que o corpus não traz, citando o trecho mais próximo.
+Marque suficiente=false apenas quando o contexto não tratar do assunto perguntado.
+Nunca invente nem complete com conhecimento externo.
 Isto é pesquisa, não aconselhamento jurídico."""
 
 
@@ -23,7 +26,7 @@ class Afirmacao(Estrito):
 
 
 class RespostaLLM(Estrito):
-    suficiente: bool = Field(description="o contexto basta para responder?")
+    suficiente: bool = Field(description="o contexto trata do assunto e sustenta ao menos parte da resposta?")
     afirmacoes: list[Afirmacao]
 
 
@@ -40,4 +43,7 @@ def gerar(pergunta: str, ctx: Contexto) -> RespostaLLM:
 def normalizar_id(cit: str) -> str:
     """Tira o prefixo da citação, por exemplo '[n:abc]' vira 'abc'."""
     c = cit.strip().strip("[]").strip()
-    return c[2:] if c[:2] in ("n:", "r:") else c
+    if c[:2] == "r:":  # o modelo às vezes escreve r:abc no lugar de r:r-abc
+        c = c[2:]
+        return c if c.startswith("r-") else "r-" + c
+    return c[2:] if c[:2] == "n:" else c

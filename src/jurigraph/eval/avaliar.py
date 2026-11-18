@@ -94,8 +94,7 @@ def avaliar_um(p: dict, modo: str) -> Resultado:
         recusou=v.recusou, acerto=acerto, veredito=veredito, motivo=motivo,
         chaves_ok=_chaves(r.texto, p["chaves"]) if p["chaves"] else v.recusou,
         afirmacoes=len(afs), nao_sustentadas=sum(not a.sustentada for a in afs),
-        citacoes_validas=(sum(bool(a.citacoes) and not a.citacoes_invalidas for a in afs) / len(afs)
-                          if afs else 0.0),
+        citacoes_validas=v.cobertura,
         confianca=v.confianca, segundos=r.segundos, custo_usd=r.tokens["custo_usd"],
         tokens=int(r.tokens["tokens_entrada"] + r.tokens["tokens_saida"]), cypher=r.contexto.cyphers)
 
@@ -166,7 +165,7 @@ entrada/saída) e não inclui o juiz da avaliação.
 - **Alucinação bruta:** afirmações que o gerador produziu e o verificador não conseguiu sustentar no
   contexto. Elas são removidas antes da resposta final; o número mede o quanto o verificador precisou agir.
 - **Impossíveis respondidas:** a falha mais grave, uma resposta dada sem base no corpus.
-- **Fidelidade das citações:** afirmações cujas citações apontam para ids presentes no subgrafo recuperado.
+- **Fidelidade das citações:** fração das citações que apontam para ids presentes no subgrafo recuperado.
 - **Limitações:** o juiz é o mesmo modelo que gera as respostas, e o conjunto de perguntas é pequeno e foi
   escrito pela equipe a partir do próprio corpus.
 - **Análise dos resultados:** `docs/artigo/discussao.tex`.

@@ -15,7 +15,7 @@ from pydantic import Field
 from jurigraph.graph_algos.paths import caminho_minimo, ligar_entidades, resumos_relevantes
 from jurigraph.llm import Estrito, make_llm
 from jurigraph.retrieval.context import Contexto, Passo
-from jurigraph.retrieval.hybrid import busca_hibrida
+from jurigraph.retrieval.hybrid import busca_hibrida, busca_vetorial
 from jurigraph.retrieval.text2cypher import text2cypher
 
 log = logging.getLogger(__name__)
@@ -114,4 +114,9 @@ def resolver_kag(pergunta: str) -> Contexto:
         for passo in ctx.passos:
             passo.descricao = f"{p.id}: {passo.descricao}"
         total.merge(ctx)
+    # reserva para quando os passos reformulam demais a pergunta e perdem o trecho óbvio
+    reserva = busca_vetorial(pergunta)
+    for passo in reserva.passos:
+        passo.descricao = f"reserva: {passo.descricao} na pergunta original"
+    total.merge(reserva)
     return total

@@ -1,6 +1,7 @@
 """Recupera, gera e verifica a resposta nos três modos da avaliação."""
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
@@ -47,12 +48,20 @@ def recuperar(pergunta: str, modo: Modo) -> Contexto:
     return ctx
 
 
-def responder(pergunta: str, modo: Modo = "hibrido") -> Resposta:
-    """Responde a pergunta medindo o tempo e os tokens gastos."""
+def responder(pergunta: str, modo: Modo = "hibrido",
+              etapa: Callable[[str], None] | None = None) -> Resposta:
+    """Responde a pergunta medindo o tempo e os tokens gastos.
+
+    A função etapa, quando informada, recebe o nome de cada fase para a interface mostrar o progresso.
+    """
+    avisar = etapa or (lambda _: None)
     USAGE.reset()
     t0 = time.perf_counter()
+    avisar("recuperar")
     ctx = recuperar(pergunta, modo)
+    avisar("gerar")
     bruta = gerar(pergunta, ctx)
+    avisar("verificar")
     ver = verificar(bruta, ctx)
     return Resposta(pergunta, modo, ctx, bruta, ver, round(time.perf_counter() - t0, 2),
                     USAGE.snapshot())

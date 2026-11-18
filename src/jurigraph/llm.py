@@ -74,7 +74,9 @@ def make_llm(model: str | None = None) -> LLMInterface:
     if s.llm_provider == "openai":
         if not s.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY não definida no .env")
-        return TrackedOpenAILLM(model_name=nome, api_key=s.openai_api_key.get_secret_value())
+        # sem limite o cliente espera até 10 minutos por resposta quando a conexão trava
+        return TrackedOpenAILLM(model_name=nome, api_key=s.openai_api_key.get_secret_value(),
+                                timeout=60.0, max_retries=2)
     if s.llm_provider == "anthropic":
         from neo4j_graphrag.llm import AnthropicLLM
 
