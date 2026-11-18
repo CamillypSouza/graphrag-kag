@@ -39,8 +39,8 @@ viram um grafo de conhecimento por uma camada estrutural determinística e uma c
 seguidas de resolução de entidades. Três estratégias de recuperação (RAG vetorial, GraphRAG híbrido com
 expansão de dois saltos e Text-to-Cypher, e um planejador no estilo KAG) compartilham um gerador com
 citações e um verificador, e expõem um escore de confiança explicável. Em 32 perguntas escritas a partir do corpus,
-todas as estratégias recusaram as perguntas sem resposta, mas a recuperação por grafo não superou o
-baseline vetorial em acerto.
+todas as estratégias recusaram as perguntas sem resposta, e o GraphRAG híbrido teve o maior acerto
+(83,3\% contra 74,1\% do baseline vetorial), ao custo de cerca de três vezes mais por pergunta.
 \end{resumo}
 
 \section{Introdução}
@@ -114,7 +114,8 @@ Os algoritmos de grafo rodam no GDS: PageRank e Leiden. O Leiden encontrou 532 c
 \subsection{Geração e anti-alucinação}
 
 O gerador recebe o contexto numerado e precisa citar, em cada afirmação, o identificador de um trecho, entidade
-ou relação. O verificador descarta citações a identificadores ausentes do subgrafo e pede a um juiz LLM que diga
+ou relação. Quando o contexto cobre só parte da pergunta, ele responde essa parte e declara o que o corpus não
+traz, em vez de recusar tudo. O verificador descarta citações a identificadores ausentes do subgrafo e pede a um juiz LLM que diga
 se cada afirmação é sustentada pelos textos citados. Só as afirmações sustentadas chegam à resposta. A
 confiança é $0{,}4\,s + 0{,}3\,c + 0{,}3\,v$, em que $s$ é a similaridade média dos melhores trechos, $c$ é a
 fração de citações válidas e $v$ é a fração de afirmações sustentadas. Abaixo de 0,35, ou sem nenhuma afirmação
@@ -152,9 +153,10 @@ Também medimos:
 
 O JuriGraph mostra que um grafo de conhecimento jurídico, construído por regras e LLM e consultado por busca
 híbrida, travessia e Text-to-Cypher validado, dá respostas com citações verificáveis e um caminho auditável da
-pergunta à fonte. Na avaliação, porém, a recuperação por grafo não superou o baseline vetorial em acerto,
-e o planejador KAG recusou mais perguntas, o que indica que o ganho do grafo depende de perguntas cuja
-resposta esteja de fato espalhada por vários documentos. Como trabalhos futuros, ficam: ampliar o corpus (jurisprudência do STJ, cuja coleta automática
+pergunta à fonte. Na avaliação, a busca híbrida com o grafo teve o maior acerto e recusou menos perguntas
+respondíveis que o baseline vetorial, e nenhuma estratégia respondeu a perguntas fora do corpus. O ganho nas
+perguntas multi-hop foi pequeno, o que indica que ele depende de perguntas cuja resposta esteja de fato
+espalhada por vários documentos. Como trabalhos futuros, ficam: ampliar o corpus (jurisprudência do STJ, cuja coleta automática
 foi bloqueada pelo portal), avaliar com especialistas em vez de um juiz LLM e reduzir a latência do verificador.
 
 \bibliographystyle{sbc}

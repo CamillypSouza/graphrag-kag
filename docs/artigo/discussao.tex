@@ -1,34 +1,32 @@
-% Análise da execução de 17/11/2026 (data/eval/resultados.jsonl). Se a avaliação for refeita,
+% Análise da execução de 18/11/2026 (data/eval/resultados.jsonl). Se a avaliação for refeita,
 % revise os números citados aqui com base em resultados.tex.
 \subsection{Discussão}
 
-O resultado não confirma a hipótese inicial de que a recuperação por grafo superaria o baseline vetorial.
-Nas 27 perguntas respondíveis, o RAG vetorial e o GraphRAG híbrido ficaram praticamente empatados
-(74,1\% e 72,2\% de acerto), e o modo KAG ficou atrás (53,7\%). Nas perguntas multi-hop, vetorial e híbrido
-empataram em 83,3\%.
+O GraphRAG híbrido teve o melhor acerto nas 27 perguntas respondíveis (83,3\%), contra 74,1\% do RAG vetorial
+e 74,1\% do planejador KAG. A vantagem apareceu sobretudo nas perguntas de um salto (90\% contra 75\%) e nas
+globais (60\% contra 50\%). Nas multi-hop, o híbrido e o KAG empataram em 87,5\%, pouco acima do vetorial
+(83,3\%). A diferença menor nas multi-hop tem uma explicação no próprio corpus: ele foi dividido em um trecho
+por artigo, e muitos artigos já citam o dispositivo relacionado. O texto do Tema 987, por exemplo, transcreve o
+art.~19 do Marco Civil, e a busca vetorial encontra a resposta sem atravessar o grafo.
 
-Três fatores explicam o resultado. Primeiro, o corpus foi dividido em um trecho por artigo, e muitas perguntas
-multi-hop do nosso conjunto podem ser respondidas por um único artigo que já cita o outro dispositivo. O texto
-do Tema 987, por exemplo, transcreve o art.~19 do Marco Civil. Nesse cenário, a busca vetorial encontra o trecho
-certo sem precisar atravessar o grafo. Segundo, a expansão de dois saltos acrescenta cerca de cem fatos ao
-contexto, o que eleva o ruído. A alucinação bruta, isto é, as afirmações geradas que o verificador rejeitou,
-subiu de 17,7\% (vetorial) para 27,8\% (híbrido) e 34,4\% (KAG). Terceiro, o planejador KAG troca a busca ampla por
-passos estreitos. Quando um passo de Cypher ou de busca volta pouco, o contexto não basta, e o sistema recusa:
-22,2\% das perguntas respondíveis foram recusadas no KAG, contra 14,8\% no vetorial.
+O grafo também reduziu as recusas indevidas. O vetorial recusou 11,1\% das perguntas respondíveis, o híbrido
+7,4\% e o KAG 3,7\%. Com mais contexto, o gerador encontra base para responder com mais frequência. O custo é
+um contexto mais ruidoso: a alucinação bruta, isto é, as afirmações geradas que o verificador rejeitou, ficou
+em 20,7\% no híbrido, contra 18,7\% no vetorial e 16,2\% no KAG. O KAG respondeu mais, mas parte dessas respostas
+foi incompleta. Em duas perguntas de um salto ele descreveu o que o contexto não trazia em vez de responder, o
+que o juiz classificou como incorreto.
 
 O mecanismo de anti-alucinação funcionou nos três modos. Todas as perguntas impossíveis foram recusadas, e
-nenhuma afirmação sem sustentação chegou à resposta final, porque o verificador as remove. O custo é a
-recusa de parte das perguntas respondíveis. O grafo trouxe ganhos que a tabela não mostra: a rastreabilidade
-(cada afirmação aponta para um trecho, uma relação ou um caminho), as consultas estruturais que o vetor não
-responde (por exemplo, contar quais normas alteraram artigos da LGPD) e os resumos de comunidade para perguntas
-globais. Ainda assim, o acerto nas globais ficou entre 40\% e 50\%, porque o juiz exige uma cobertura que poucos
-resumos não alcançam.
+nenhuma afirmação sem sustentação chegou à resposta final, porque o verificador as remove. Os erros que restaram
+são recusas ou respostas incompletas, e não respostas inventadas. Uma pergunta multi-hop (a remissão da LGPD à
+Lei de Arbitragem) foi recusada pelos três modos, porque a busca não trouxe o inciso que a responde.
 
-O modo híbrido custou cerca de 3,4 vezes mais por pergunta que o vetorial (US\$ 0,0116 contra US\$ 0,0034),
-sobretudo pelo contexto maior. A latência média ficou entre 5 e 8 segundos. A maior parte dela vem das três
-chamadas ao LLM (Cypher, geração e verificação).
+O modo híbrido custou cerca de 3,2 vezes mais por pergunta que o vetorial (US\$ 0,0126 contra US\$ 0,0039), por
+causa do contexto maior e da consulta Cypher, e foi o mais lento (8,0 s em média, contra 4,5 s). A maior parte da
+latência vem das chamadas ao LLM (Cypher, geração e verificação).
 
 \textbf{Limitações.} O conjunto tem 32 perguntas, escritas pela própria equipe a partir do corpus. O juiz é o
-mesmo modelo que gera as respostas. E cada configuração rodou uma única vez, sem medir a variância entre
-execuções. As diferenças de poucos pontos percentuais entre o vetorial e o híbrido não devem ser lidas como
-significativas.
+mesmo modelo que gera as respostas. Cada configuração rodou uma única vez, sem medir a variância entre execuções,
+e respostas a uma mesma pergunta variam entre execuções. A diferença de nove pontos entre o híbrido e o vetorial
+corresponde a poucas perguntas e deve ser confirmada com um conjunto maior. Por fim, o modelo de embeddings é
+pequeno, e perguntas muito coloquiais às vezes não recuperam o artigo certo.
